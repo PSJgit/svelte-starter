@@ -7,19 +7,34 @@
   let description = "";
   let formState = 'empty';
 
-  let createdContact;
+  let createdContacts = [];
+
   const addContact = () => {
     if (name.trim().length === 0 || title.trim().length === 0 || image.trim().length === 0 || description.trim().length === 0) {
       formState = 'invalid';
       return;
     }
-    createdContact = {
-      name: name,
-      jobTitle: title,
-      imageUrl: image,
-      desc : description
-    }
+    // ID should be uuid 
+    createdContacts = [
+      ...createdContacts,
+      {
+        id: Math.random(),
+        name: name,
+        jobTitle: title,
+        imageUrl: image,
+        desc : description
+      }
+    ];
+
     formState = 'done';
+  };
+
+  const deleteFirst = ()=> {
+    createdContacts = createdContacts.slice(1);
+  }
+
+  const deleteLast = ()=> {
+    createdContacts = createdContacts.slice(0, -1);
   };
 
 </script>
@@ -38,7 +53,7 @@
   </div>
   <div class="form-control">
     <label for="jobTitle">Job Title</label>
-    <input type="text" bind:value={title} id="jobTitle" />
+    <input type="text"  bind:value={title} id="jobTitle" />
   </div>
   <div class="form-control">
     <label for="image">Image URL</label>
@@ -51,13 +66,22 @@
 </div>
 
 <button on:click={addContact}>Add Contact Card</button>
+<button on:click={deleteLast}>Delete First</button>
+<button on:click={deleteFirst}>Delete Last</button>
 
-{#if formState === 'done'}
-  <ContactCard 
-    userName={name} 
-    jobTitle={title}
-    {description} 
-    userImage={image} />
-{:else if formState === 'invalid'}
-  <p>Invalid input</p>
+{#if formState === 'invalid'}
+  <p>Invalid input!</p>
+{:else}
+  <p>Please enter some data and hit the button.</p>
 {/if}
+
+{#each createdContacts as contact, index}
+  <h2># {index + 1}</h2>
+ <ContactCard 
+    userName={contact.name} 
+    jobTitle={contact.jobTitle}
+    description={contact.desc} 
+    userImage={contact.imageUrl} />
+{:else}
+  <p>No Contacts, please add some</p>
+{/each}
