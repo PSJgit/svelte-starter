@@ -15,12 +15,13 @@
 	}
 
 	const addPassword = () => {
-		if (validation === 'passed' && userPassword !== passwordArr[passwordArr.length-1]) {
+		if (validation === 'passed' && !passwordArr.includes(userPassword)) {
 			passwordArr = [
 				...passwordArr,
 				userPassword
 			];
 		}
+		console.log('Duplicate password')
 	}
 
 	const deletePassword = (index) => {
