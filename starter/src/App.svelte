@@ -5,16 +5,20 @@
   let title = "";
   let image = "";
   let description = "";
-  let formState = 'empty';
+  let formState = "empty";
 
   let createdContacts = [];
 
-  const addContact = () => {
-    if (name.trim().length === 0 || title.trim().length === 0 || image.trim().length === 0 || description.trim().length === 0) {
-      formState = 'invalid';
+  function addContact() {
+    if (
+      name.trim().length == 0 ||
+      title.trim().length == 0 ||
+      image.trim().length == 0 ||
+      description.trim().length == 0
+    ) {
+      formState = "invalid";
       return;
     }
-    // ID should be uuid 
     createdContacts = [
       ...createdContacts,
       {
@@ -22,21 +26,19 @@
         name: name,
         jobTitle: title,
         imageUrl: image,
-        desc : description
+        desc: description
       }
     ];
+    formState = "done";
+  }
 
-    formState = 'done';
-  };
-
-  const deleteFirst = ()=> {
+  function deleteFirst() {
     createdContacts = createdContacts.slice(1);
   }
 
-  const deleteLast = ()=> {
+  function deleteLast() {
     createdContacts = createdContacts.slice(0, -1);
-  };
-
+  }
 </script>
 
 <style>
@@ -53,7 +55,7 @@
   </div>
   <div class="form-control">
     <label for="jobTitle">Job Title</label>
-    <input type="text"  bind:value={title} id="jobTitle" />
+    <input type="text" bind:value={title} id="jobTitle" />
   </div>
   <div class="form-control">
     <label for="image">Image URL</label>
@@ -66,22 +68,22 @@
 </div>
 
 <button on:click={addContact}>Add Contact Card</button>
-<button on:click={deleteLast}>Delete First</button>
-<button on:click={deleteFirst}>Delete Last</button>
+<button on:click={deleteFirst}>Delete First</button>
+<button on:click={deleteLast}>Delete Last</button>
 
 {#if formState === 'invalid'}
-  <p>Invalid input!</p>
+  <p>Invalid input.</p>
 {:else}
-  <p>Please enter some data and hit the button.</p>
+  <p>Please enter some data and hit the button!</p>
 {/if}
 
-{#each createdContacts as contact, index}
-  <h2># {index + 1}</h2>
- <ContactCard 
-    userName={contact.name} 
+{#each createdContacts as contact, i (contact.id)}
+  <h2># {i + 1}</h2>
+  <ContactCard
+    userName={contact.name}
     jobTitle={contact.jobTitle}
-    description={contact.desc} 
+    description={contact.desc}
     userImage={contact.imageUrl} />
 {:else}
-  <p>No Contacts, please add some</p>
+  <p>Please start adding some contacts, we found none!</p>
 {/each}
