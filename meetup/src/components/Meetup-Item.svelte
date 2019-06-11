@@ -1,10 +1,11 @@
 <script>
-    export let title;
-    export let subTitle;
-    export let imageUrl;
-    export let description;
-    export let address;
-    export let email;
+  /* Meetup-item component props */
+  export let title;
+  export let subTitle;
+  export let imageUrl;
+  export let description;
+  export let address;
+  export let email;
 </script>
 
 <style>
@@ -68,11 +69,11 @@
     <p>{address}</p>
   </header>
   <div class="image">
-    <img src="{imageUrl}" alt="{title}" />
+    <img src={imageUrl} alt={title} />
   </div>
   <div class="content">
     <p>{description}</p>
-    
+
   </div>
   <footer>
     <a href="mailTo:{email}">Contact</a>
