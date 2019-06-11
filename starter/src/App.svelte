@@ -65,11 +65,16 @@
     <label for="desc">Description</label>
     <textarea rows="3" bind:value={description} id="desc" />
   </div>
-</div>
 
-<button on:click={addContact}>Add Contact Card</button>
-<button on:click={deleteFirst}>Delete First</button>
-<button on:click={deleteLast}>Delete Last</button>
+  <button on:click|preventDefault={addContact}>Add Contact Card</button>
+  <button on:click|preventDefault={deleteFirst}>Delete First</button>
+  <button on:click|preventDefault={deleteLast}>Delete Last</button>
+
+</div>
+<!-- modifiers =  -->
+<!-- <button on:click|once|capture|stopPropagation|preventDefault={addContact}>Add Contact Card</button> -->
+
+
 
 {#if formState === 'invalid'}
   <p>Invalid input.</p>
