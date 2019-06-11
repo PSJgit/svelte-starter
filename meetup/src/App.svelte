@@ -6,18 +6,18 @@
         {
             id: 'm1',
             title: 'title',
-            subtitle: 'subtitle',
+            subTitle: 'subtitle',
             description: 'In this descriptiong',
-            imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Advert_for_West_Indian_Lime_Juice_Wellcome_L0040443.jpg',
+            imageUrl: 'images/rota-alternativa-1663969-unsplash.jpg',
             address: 'address',
             contactEmail: 'email@email.com'
         },
         {
             id: 'm2',
             title: 'title2',
-            subtitle: 'subtitle2',
+            subTitle: 'subtitle2',
             description: 'In this description2',
-            imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Advert_for_West_Indian_Lime_Juice_Wellcome_L0040443.jpg',
+            imageUrl: 'images/janis-karkossa-1668527-unsplash.jpg',
             address: 'address2',
             contactEmail: 'email@email.com2'
         }
@@ -34,7 +34,14 @@
 
 <section id='meetups'>
     {#each meetups as meetup}
-        <MeetupItem />
+        <MeetupItem 
+            title={meetup.title}
+            subTitle={meetup.subTitle}
+            description={meetup.description}
+            imageUrl={meetup.imageUrl}
+            address={meetup.address}
+            contactEmail={meetup.contactEmail}
+        />
     {/each}
 </section>
 

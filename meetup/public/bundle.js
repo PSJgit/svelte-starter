@@ -52,6 +52,11 @@ var app = (function () {
     function children(element) {
         return Array.from(element.childNodes);
     }
+    function set_data(text, data) {
+        data = '' + data;
+        if (text.data !== data)
+            text.data = data;
+    }
 
     let current_component;
     function set_current_component(component) {
@@ -301,52 +306,63 @@ var app = (function () {
     const file$1 = "src\\components\\Meetup-Item.svelte";
 
     function create_fragment$1(ctx) {
-    	var article, header, h1, t1, h2, t3, div0, img, t4, div1, p, t5, footer, button0, t7, button1;
+    	var article, header, h1, t0, t1, h2, t2, t3, p0, t4, t5, div0, img, t6, div1, p1, t7, t8, footer, a, t9, a_href_value, t10, button0, t12, button1;
 
     	return {
     		c: function create() {
     			article = element("article");
     			header = element("header");
     			h1 = element("h1");
-    			h1.textContent = "TITLE";
+    			t0 = text(ctx.title);
     			t1 = space();
     			h2 = element("h2");
-    			h2.textContent = "SUBTITLE";
+    			t2 = text(ctx.subTitle);
     			t3 = space();
+    			p0 = element("p");
+    			t4 = text(ctx.address);
+    			t5 = space();
     			div0 = element("div");
     			img = element("img");
-    			t4 = space();
+    			t6 = space();
     			div1 = element("div");
-    			p = element("p");
-    			t5 = space();
+    			p1 = element("p");
+    			t7 = text(ctx.description);
+    			t8 = space();
     			footer = element("footer");
+    			a = element("a");
+    			t9 = text("Contact");
+    			t10 = space();
     			button0 = element("button");
     			button0.textContent = "Show Details";
-    			t7 = space();
+    			t12 = space();
     			button1 = element("button");
     			button1.textContent = "Favorite";
     			h1.className = "svelte-2ao9o8";
-    			add_location(h1, file$1, 56, 4, 791);
+    			add_location(h1, file$1, 65, 4, 966);
     			h2.className = "svelte-2ao9o8";
-    			add_location(h2, file$1, 57, 4, 811);
+    			add_location(h2, file$1, 66, 4, 988);
+    			p0.className = "svelte-2ao9o8";
+    			add_location(p0, file$1, 67, 4, 1013);
     			header.className = "svelte-2ao9o8";
-    			add_location(header, file$1, 55, 2, 777);
-    			img.src = "";
-    			img.alt = "";
+    			add_location(header, file$1, 64, 2, 952);
+    			img.src = ctx.imageUrl;
+    			img.alt = ctx.title;
     			img.className = "svelte-2ao9o8";
-    			add_location(img, file$1, 60, 4, 870);
+    			add_location(img, file$1, 70, 4, 1071);
     			div0.className = "image svelte-2ao9o8";
-    			add_location(div0, file$1, 59, 2, 845);
-    			p.className = "svelte-2ao9o8";
-    			add_location(p, file$1, 63, 4, 932);
+    			add_location(div0, file$1, 69, 2, 1046);
+    			p1.className = "svelte-2ao9o8";
+    			add_location(p1, file$1, 73, 4, 1150);
     			div1.className = "content svelte-2ao9o8";
-    			add_location(div1, file$1, 62, 2, 905);
-    			add_location(button0, file$1, 66, 4, 965);
-    			add_location(button1, file$1, 67, 4, 1000);
+    			add_location(div1, file$1, 72, 2, 1123);
+    			a.href = a_href_value = "mailTo:" + ctx.email;
+    			add_location(a, file$1, 77, 4, 1204);
+    			add_location(button0, file$1, 78, 4, 1246);
+    			add_location(button1, file$1, 79, 4, 1281);
     			footer.className = "svelte-2ao9o8";
-    			add_location(footer, file$1, 65, 2, 951);
+    			add_location(footer, file$1, 76, 2, 1190);
     			article.className = "svelte-2ao9o8";
-    			add_location(article, file$1, 54, 0, 764);
+    			add_location(article, file$1, 63, 0, 939);
     		},
 
     		l: function claim(nodes) {
@@ -357,22 +373,60 @@ var app = (function () {
     			insert(target, article, anchor);
     			append(article, header);
     			append(header, h1);
+    			append(h1, t0);
     			append(header, t1);
     			append(header, h2);
-    			append(article, t3);
+    			append(h2, t2);
+    			append(header, t3);
+    			append(header, p0);
+    			append(p0, t4);
+    			append(article, t5);
     			append(article, div0);
     			append(div0, img);
-    			append(article, t4);
+    			append(article, t6);
     			append(article, div1);
-    			append(div1, p);
-    			append(article, t5);
+    			append(div1, p1);
+    			append(p1, t7);
+    			append(article, t8);
     			append(article, footer);
+    			append(footer, a);
+    			append(a, t9);
+    			append(footer, t10);
     			append(footer, button0);
-    			append(footer, t7);
+    			append(footer, t12);
     			append(footer, button1);
     		},
 
-    		p: noop,
+    		p: function update(changed, ctx) {
+    			if (changed.title) {
+    				set_data(t0, ctx.title);
+    			}
+
+    			if (changed.subTitle) {
+    				set_data(t2, ctx.subTitle);
+    			}
+
+    			if (changed.address) {
+    				set_data(t4, ctx.address);
+    			}
+
+    			if (changed.imageUrl) {
+    				img.src = ctx.imageUrl;
+    			}
+
+    			if (changed.title) {
+    				img.alt = ctx.title;
+    			}
+
+    			if (changed.description) {
+    				set_data(t7, ctx.description);
+    			}
+
+    			if ((changed.email) && a_href_value !== (a_href_value = "mailTo:" + ctx.email)) {
+    				a.href = a_href_value;
+    			}
+    		},
+
     		i: noop,
     		o: noop,
 
@@ -384,10 +438,106 @@ var app = (function () {
     	};
     }
 
+    function instance($$self, $$props, $$invalidate) {
+    	let { title, subTitle, imageUrl, description, address, email } = $$props;
+
+    	const writable_props = ['title', 'subTitle', 'imageUrl', 'description', 'address', 'email'];
+    	Object.keys($$props).forEach(key => {
+    		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<Meetup_Item> was created with unknown prop '${key}'`);
+    	});
+
+    	$$self.$set = $$props => {
+    		if ('title' in $$props) $$invalidate('title', title = $$props.title);
+    		if ('subTitle' in $$props) $$invalidate('subTitle', subTitle = $$props.subTitle);
+    		if ('imageUrl' in $$props) $$invalidate('imageUrl', imageUrl = $$props.imageUrl);
+    		if ('description' in $$props) $$invalidate('description', description = $$props.description);
+    		if ('address' in $$props) $$invalidate('address', address = $$props.address);
+    		if ('email' in $$props) $$invalidate('email', email = $$props.email);
+    	};
+
+    	return {
+    		title,
+    		subTitle,
+    		imageUrl,
+    		description,
+    		address,
+    		email
+    	};
+    }
+
     class Meetup_Item extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, null, create_fragment$1, safe_not_equal, []);
+    		init(this, options, instance, create_fragment$1, safe_not_equal, ["title", "subTitle", "imageUrl", "description", "address", "email"]);
+
+    		const { ctx } = this.$$;
+    		const props = options.props || {};
+    		if (ctx.title === undefined && !('title' in props)) {
+    			console.warn("<Meetup_Item> was created without expected prop 'title'");
+    		}
+    		if (ctx.subTitle === undefined && !('subTitle' in props)) {
+    			console.warn("<Meetup_Item> was created without expected prop 'subTitle'");
+    		}
+    		if (ctx.imageUrl === undefined && !('imageUrl' in props)) {
+    			console.warn("<Meetup_Item> was created without expected prop 'imageUrl'");
+    		}
+    		if (ctx.description === undefined && !('description' in props)) {
+    			console.warn("<Meetup_Item> was created without expected prop 'description'");
+    		}
+    		if (ctx.address === undefined && !('address' in props)) {
+    			console.warn("<Meetup_Item> was created without expected prop 'address'");
+    		}
+    		if (ctx.email === undefined && !('email' in props)) {
+    			console.warn("<Meetup_Item> was created without expected prop 'email'");
+    		}
+    	}
+
+    	get title() {
+    		throw new Error("<Meetup_Item>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set title(value) {
+    		throw new Error("<Meetup_Item>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get subTitle() {
+    		throw new Error("<Meetup_Item>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set subTitle(value) {
+    		throw new Error("<Meetup_Item>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get imageUrl() {
+    		throw new Error("<Meetup_Item>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set imageUrl(value) {
+    		throw new Error("<Meetup_Item>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get description() {
+    		throw new Error("<Meetup_Item>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set description(value) {
+    		throw new Error("<Meetup_Item>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get address() {
+    		throw new Error("<Meetup_Item>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set address(value) {
+    		throw new Error("<Meetup_Item>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get email() {
+    		throw new Error("<Meetup_Item>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set email(value) {
+    		throw new Error("<Meetup_Item>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
 
@@ -405,7 +555,17 @@ var app = (function () {
     function create_each_block(ctx) {
     	var current;
 
-    	var meetupitem = new Meetup_Item({ $$inline: true });
+    	var meetupitem = new Meetup_Item({
+    		props: {
+    		title: ctx.meetup.title,
+    		subTitle: ctx.meetup.subTitle,
+    		description: ctx.meetup.description,
+    		imageUrl: ctx.meetup.imageUrl,
+    		address: ctx.meetup.address,
+    		contactEmail: ctx.meetup.contactEmail
+    	},
+    		$$inline: true
+    	});
 
     	return {
     		c: function create() {
@@ -415,6 +575,17 @@ var app = (function () {
     		m: function mount(target, anchor) {
     			mount_component(meetupitem, target, anchor);
     			current = true;
+    		},
+
+    		p: function update(changed, ctx) {
+    			var meetupitem_changes = {};
+    			if (changed.meetups) meetupitem_changes.title = ctx.meetup.title;
+    			if (changed.meetups) meetupitem_changes.subTitle = ctx.meetup.subTitle;
+    			if (changed.meetups) meetupitem_changes.description = ctx.meetup.description;
+    			if (changed.meetups) meetupitem_changes.imageUrl = ctx.meetup.imageUrl;
+    			if (changed.meetups) meetupitem_changes.address = ctx.meetup.address;
+    			if (changed.meetups) meetupitem_changes.contactEmail = ctx.meetup.contactEmail;
+    			meetupitem.$set(meetupitem_changes);
     		},
 
     		i: function intro(local) {
@@ -445,7 +616,7 @@ var app = (function () {
     	var each_blocks = [];
 
     	for (var i = 0; i < each_value.length; i += 1) {
-    		each_blocks[i] = create_each_block();
+    		each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
     	}
 
     	function outro_block(i, detaching, local) {
@@ -472,7 +643,7 @@ var app = (function () {
     			}
     			section.id = "meetups";
     			section.className = "svelte-169sn84";
-    			add_location(section, file$2, 34, 0, 995);
+    			add_location(section, file$2, 34, 0, 867);
     		},
 
     		l: function claim(nodes) {
@@ -495,13 +666,18 @@ var app = (function () {
     			if (changed.meetups) {
     				each_value = ctx.meetups;
 
-    				for (var i = each_blocks.length; i < each_value.length; i += 1) {
+    				for (var i = 0; i < each_value.length; i += 1) {
     					const child_ctx = get_each_context(ctx, each_value, i);
 
-    					each_blocks[i] = create_each_block();
-    					each_blocks[i].c();
-    					each_blocks[i].i(1);
-    					each_blocks[i].m(section, null);
+    					if (each_blocks[i]) {
+    						each_blocks[i].p(changed, child_ctx);
+    						each_blocks[i].i(1);
+    					} else {
+    						each_blocks[i] = create_each_block(child_ctx);
+    						each_blocks[i].c();
+    						each_blocks[i].i(1);
+    						each_blocks[i].m(section, null);
+    					}
     				}
 
     				group_outros();
@@ -541,25 +717,25 @@ var app = (function () {
     	};
     }
 
-    function instance($$self) {
+    function instance$1($$self) {
     	
 
         const meetups = [
             {
                 id: 'm1',
                 title: 'title',
-                subtitle: 'subtitle',
+                subTitle: 'subtitle',
                 description: 'In this descriptiong',
-                imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Advert_for_West_Indian_Lime_Juice_Wellcome_L0040443.jpg',
+                imageUrl: 'images/rota-alternativa-1663969-unsplash.jpg',
                 address: 'address',
                 contactEmail: 'email@email.com'
             },
             {
                 id: 'm2',
                 title: 'title2',
-                subtitle: 'subtitle2',
+                subTitle: 'subtitle2',
                 description: 'In this description2',
-                imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/d/d5/Advert_for_West_Indian_Lime_Juice_Wellcome_L0040443.jpg',
+                imageUrl: 'images/janis-karkossa-1668527-unsplash.jpg',
                 address: 'address2',
                 contactEmail: 'email@email.com2'
             }
@@ -571,7 +747,7 @@ var app = (function () {
     class App extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance, create_fragment$2, safe_not_equal, []);
+    		init(this, options, instance$1, create_fragment$2, safe_not_equal, []);
     	}
     }
 
