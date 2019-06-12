@@ -884,28 +884,28 @@ var app = (function () {
     			button1.$$.fragment.c();
     			t10 = space();
     			button2.$$.fragment.c();
-    			h1.className = "svelte-2ao9o8";
-    			add_location(h1, file$3, 69, 4, 1040);
-    			h2.className = "svelte-2ao9o8";
-    			add_location(h2, file$3, 70, 4, 1062);
-    			p0.className = "svelte-2ao9o8";
-    			add_location(p0, file$3, 71, 4, 1087);
-    			header.className = "svelte-2ao9o8";
-    			add_location(header, file$3, 68, 2, 1026);
+    			h1.className = "svelte-1xvjpvv";
+    			add_location(h1, file$3, 73, 4, 1082);
+    			h2.className = "svelte-1xvjpvv";
+    			add_location(h2, file$3, 74, 4, 1104);
+    			p0.className = "svelte-1xvjpvv";
+    			add_location(p0, file$3, 75, 4, 1129);
+    			header.className = "svelte-1xvjpvv";
+    			add_location(header, file$3, 72, 2, 1068);
     			img.src = ctx.imageUrl;
     			img.alt = ctx.title;
-    			img.className = "svelte-2ao9o8";
-    			add_location(img, file$3, 74, 4, 1145);
-    			div0.className = "image svelte-2ao9o8";
-    			add_location(div0, file$3, 73, 2, 1120);
-    			p1.className = "svelte-2ao9o8";
-    			add_location(p1, file$3, 77, 4, 1220);
-    			div1.className = "content svelte-2ao9o8";
-    			add_location(div1, file$3, 76, 2, 1193);
-    			footer.className = "svelte-2ao9o8";
-    			add_location(footer, file$3, 80, 2, 1256);
-    			article.className = "svelte-2ao9o8";
-    			add_location(article, file$3, 67, 0, 1013);
+    			img.className = "svelte-1xvjpvv";
+    			add_location(img, file$3, 78, 4, 1187);
+    			div0.className = "image svelte-1xvjpvv";
+    			add_location(div0, file$3, 77, 2, 1162);
+    			p1.className = "svelte-1xvjpvv";
+    			add_location(p1, file$3, 81, 4, 1262);
+    			div1.className = "content svelte-1xvjpvv";
+    			add_location(div1, file$3, 80, 2, 1235);
+    			footer.className = "svelte-1xvjpvv";
+    			add_location(footer, file$3, 84, 2, 1298);
+    			article.className = "svelte-1xvjpvv";
+    			add_location(article, file$3, 71, 0, 1055);
     		},
 
     		l: function claim(nodes) {
