@@ -1,6 +1,9 @@
 
 <script>
-    
+    import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
+
 </script>
 
 <style>
@@ -32,7 +35,7 @@
     }
 </style>
 
-<div class='backdrop'></div>
+<div class='backdrop' on:click="{() => dispatch('cancel')}"></div>
 <!-- only one slot can be unnamed, which can be used as a default -->
 <div class='modal'>
    <header>
@@ -43,7 +46,7 @@
   </div>
   <footer>
     <slot name='footer'>
-        <button>if nothing is passed in with the name 'footer', render a button with this in it</button>
+        <button on:click="{() => dispatch('close')}">if nothing is passed in with the name 'footer', render a button with this in it</button>
     </slot>
   </footer>
 </div>
