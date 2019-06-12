@@ -2,7 +2,7 @@
   import Product from "./Product.svelte";
   import Modal from "./Modal.svelte";
   
-
+  let showModal = false;
   let products = [
     {
       id: 'p1',
@@ -19,6 +19,8 @@
   const deleteItem = (e) => {
      console.log(e.detail)
   }
+
+
 </script>
 
 <style>
@@ -34,6 +36,12 @@
   />
 {/each}
 
-<Modal>
-  <h1>Slot html output</h1>
-</Modal>
+<button on:click="{() => (showModal = true)}">Show modal</button>
+
+{#if showModal}
+  <Modal on:cancel={() => (showModal = false)} on:close={() => (showModal = false)}>
+    <h1 slot='header'>HEADER CONTENT</h1>
+    <p>content... content</p>
+  </Modal>
+{/if}
+
