@@ -35,5 +35,7 @@
 {/each}
 
 <Modal>
-  <h1>Slot html output</h1>
+  <h1 slot='header'>HEADER CONTENT</h1>
+  <p>content... content</p>
+  
 </Modal>
