@@ -1,10 +1,14 @@
 <script>
-    export let title;
-    export let subTitle;
-    export let imageUrl;
-    export let description;
-    export let address;
-    export let email;
+
+  import Button from '../ui/Button.svelte';
+
+  /* Meetup-item component props */
+  export let title;
+  export let subTitle;
+  export let imageUrl;
+  export let description;
+  export let address;
+  export let email;
 </script>
 
 <style>
@@ -59,6 +63,10 @@
   div {
     text-align: right;
   }
+  
+  .content {
+    height: 4rem;
+  }
 </style>
 
 <article>
@@ -68,15 +76,15 @@
     <p>{address}</p>
   </header>
   <div class="image">
-    <img src="{imageUrl}" alt="{title}" />
+    <img src={imageUrl} alt={title} />
   </div>
   <div class="content">
     <p>{description}</p>
-    
+
   </div>
   <footer>
-    <a href="mailTo:{email}">Contact</a>
-    <button>Show Details</button>
-    <button>Favorite</button>
+    <Button href="mailTo:{email}" type={"button"} text={"Contact"}/>
+    <Button type={"button"} text={"Show details"}/>
+    <Button mode={"outline"} type={"button"} text={"Favourite"}/>
   </footer>
 </article>
