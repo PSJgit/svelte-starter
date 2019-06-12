@@ -1,5 +1,6 @@
 <script>
   import Product from "./Product.svelte";
+  import Modal from "./Modal.svelte";
   
 
   let products = [
@@ -32,3 +33,7 @@
     on:deleteItem={deleteItem}
   />
 {/each}
+
+<Modal>
+  <h1>Slot html output</h1>
+</Modal>
