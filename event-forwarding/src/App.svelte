@@ -3,6 +3,8 @@
   import Modal from "./Modal.svelte";
   
   let showModal = false;
+  let closable = false;
+
   let products = [
     {
       id: 'p1',
@@ -20,14 +22,13 @@
      console.log(e.detail)
   }
 
-
 </script>
 
 <style>
 
 </style>
 
-<!-- if props are the same name as the object props being passed down, ... will unpack it for you -->
+<!-- if props are the same name as the object props being passed down, spread operator will unpack it for you -->
 {#each products as product}
   <Product 
     {...product}
@@ -39,9 +40,10 @@
 <button on:click="{() => (showModal = true)}">Show modal</button>
 
 {#if showModal}
-  <Modal on:cancel={() => (showModal = false)} on:close={() => (showModal = false)}>
+  <Modal on:cancel={() => (showModal = false)} on:close={() => (showModal = false)} let:didAgree={closable}>
     <h1 slot='header'>HEADER CONTENT</h1>
     <p>content... content</p>
+    <!-- <button slot="footer" on:click={() => (showModal = false)} disabled={!closable}>custom button </button> -->
   </Modal>
 {/if}
 

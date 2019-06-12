@@ -4,6 +4,7 @@
 
     const dispatch = createEventDispatcher();
 
+    let agreed = false;
 </script>
 
 <style>
@@ -33,6 +34,9 @@
     header {
         border-bottom: 1px solid #ccc;
     }
+    button[disabled] {
+        opacity: 0.4;
+    }
 </style>
 
 <div class='backdrop' on:click="{() => dispatch('cancel')}"></div>
@@ -44,9 +48,13 @@
   <div class='content'>
     <slot/>
   </div>
+  <div class='disclaimer'>
+    <p>Before you close, you need to agree to our terms!</p>
+    <button on:click="{() => agreed = true}">Agree</button>
+  </div>
   <footer>
-    <slot name='footer'>
-        <button on:click="{() => dispatch('close')}">if nothing is passed in with the name 'footer', render a button with this in it</button>
+    <slot name='footer' didAgree={agreed}>
+        <button on:click="{() => dispatch('close')}" disabled={!agreed}>if nothing is passed in with the name 'footer', render a button with this in it</button>
     </slot>
   </footer>
 </div>
