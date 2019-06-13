@@ -77,10 +77,29 @@ var app = (function () {
         if (text.data !== data)
             text.data = data;
     }
+    function custom_event(type, detail) {
+        const e = document.createEvent('CustomEvent');
+        e.initCustomEvent(type, false, false, detail);
+        return e;
+    }
 
     let current_component;
     function set_current_component(component) {
         current_component = component;
+    }
+    function createEventDispatcher() {
+        const component = current_component;
+        return (type, detail) => {
+            const callbacks = component.$$.callbacks[type];
+            if (callbacks) {
+                // TODO are there situations where events could be dispatched
+                // in a server (non-DOM) environment?
+                const event = custom_event(type, detail);
+                callbacks.slice().forEach(fn => {
+                    fn.call(component, event);
+                });
+            }
+        };
     }
     // TODO figure out if we still want to support
     // shorthand events, or if we want to implement
@@ -346,12 +365,12 @@ var app = (function () {
     			input = element("input");
     			label_1.htmlFor = ctx.label;
     			label_1.className = "svelte-10fbh92";
-    			add_location(label_1, file$1, 48, 4, 893);
+    			add_location(label_1, file$1, 48, 4, 916);
     			attr(input, "type", ctx.type);
     			input.id = ctx.id;
     			input.value = ctx.value;
     			input.className = "svelte-10fbh92";
-    			add_location(input, file$1, 49, 4, 933);
+    			add_location(input, file$1, 49, 4, 956);
     			dispose = listen(input, "input", ctx.input_handler_1);
     		},
 
@@ -405,12 +424,12 @@ var app = (function () {
     			textarea = element("textarea");
     			label_1.htmlFor = ctx.id;
     			label_1.className = "svelte-10fbh92";
-    			add_location(label_1, file$1, 45, 4, 798);
+    			add_location(label_1, file$1, 45, 4, 821);
     			textarea.rows = ctx.rows;
     			textarea.id = ctx.id;
     			textarea.value = ctx.value;
     			textarea.className = "svelte-10fbh92";
-    			add_location(textarea, file$1, 46, 4, 835);
+    			add_location(textarea, file$1, 46, 4, 858);
     			dispose = listen(textarea, "input", ctx.input_handler);
     		},
 
@@ -471,7 +490,7 @@ var app = (function () {
     			div = element("div");
     			if_block.c();
     			div.className = "form-control svelte-10fbh92";
-    			add_location(div, file$1, 43, 0, 730);
+    			add_location(div, file$1, 43, 0, 753);
     		},
 
     		l: function claim(nodes) {
@@ -511,7 +530,7 @@ var app = (function () {
 
     function instance($$self, $$props, $$invalidate) {
     	/* props */
-      let { controlType, rows, id, label, value, type } = $$props;
+      let { controlType = null, rows = null, id, label, value, type = "text" } = $$props;
 
     	const writable_props = ['controlType', 'rows', 'id', 'label', 'value', 'type'];
     	Object.keys($$props).forEach(key => {
@@ -554,12 +573,6 @@ var app = (function () {
 
     		const { ctx } = this.$$;
     		const props = options.props || {};
-    		if (ctx.controlType === undefined && !('controlType' in props)) {
-    			console.warn("<TextInput> was created without expected prop 'controlType'");
-    		}
-    		if (ctx.rows === undefined && !('rows' in props)) {
-    			console.warn("<TextInput> was created without expected prop 'rows'");
-    		}
     		if (ctx.id === undefined && !('id' in props)) {
     			console.warn("<TextInput> was created without expected prop 'id'");
     		}
@@ -568,9 +581,6 @@ var app = (function () {
     		}
     		if (ctx.value === undefined && !('value' in props)) {
     			console.warn("<TextInput> was created without expected prop 'value'");
-    		}
-    		if (ctx.type === undefined && !('type' in props)) {
-    			console.warn("<TextInput> was created without expected prop 'type'");
     		}
     	}
 
@@ -629,15 +639,16 @@ var app = (function () {
 
     // (165:2) {:else}
     function create_else_block$1(ctx) {
-    	var button, t;
+    	var button, t, dispose;
 
     	return {
     		c: function create() {
     			button = element("button");
     			t = text(ctx.text);
-    			button.className = "" + ctx.mode + " svelte-364aat";
+    			button.className = "" + ctx.mode + " svelte-6ra9d1";
     			button.type = ctx.type;
-    			add_location(button, file$2, 165, 2, 2784);
+    			add_location(button, file$2, 165, 2, 2937);
+    			dispose = listen(button, "click", ctx.click_handler);
     		},
 
     		m: function mount(target, anchor) {
@@ -651,7 +662,7 @@ var app = (function () {
     			}
 
     			if (changed.mode) {
-    				button.className = "" + ctx.mode + " svelte-364aat";
+    				button.className = "" + ctx.mode + " svelte-6ra9d1";
     			}
 
     			if (changed.type) {
@@ -663,6 +674,8 @@ var app = (function () {
     			if (detaching) {
     				detach(button);
     			}
+
+    			dispose();
     		}
     	};
     }
@@ -676,8 +689,8 @@ var app = (function () {
     			a = element("a");
     			t = text(ctx.text);
     			a.href = ctx.href;
-    			a.className = "svelte-364aat";
-    			add_location(a, file$2, 163, 2, 2749);
+    			a.className = "svelte-6ra9d1";
+    			add_location(a, file$2, 163, 2, 2902);
     		},
 
     		m: function mount(target, anchor) {
@@ -757,12 +770,16 @@ var app = (function () {
 
     function instance$1($$self, $$props, $$invalidate) {
     	/* props */
-      let { type, text, href, mode } = $$props;
+      let { type = "button", text, href = null, mode = null } = $$props;
 
     	const writable_props = ['type', 'text', 'href', 'mode'];
     	Object.keys($$props).forEach(key => {
     		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<Button> was created with unknown prop '${key}'`);
     	});
+
+    	function click_handler(event) {
+    		bubble($$self, event);
+    	}
 
     	$$self.$set = $$props => {
     		if ('type' in $$props) $$invalidate('type', type = $$props.type);
@@ -771,7 +788,7 @@ var app = (function () {
     		if ('mode' in $$props) $$invalidate('mode', mode = $$props.mode);
     	};
 
-    	return { type, text, href, mode };
+    	return { type, text, href, mode, click_handler };
     }
 
     class Button extends SvelteComponentDev {
@@ -781,17 +798,8 @@ var app = (function () {
 
     		const { ctx } = this.$$;
     		const props = options.props || {};
-    		if (ctx.type === undefined && !('type' in props)) {
-    			console.warn("<Button> was created without expected prop 'type'");
-    		}
     		if (ctx.text === undefined && !('text' in props)) {
     			console.warn("<Button> was created without expected prop 'text'");
-    		}
-    		if (ctx.href === undefined && !('href' in props)) {
-    			console.warn("<Button> was created without expected prop 'href'");
-    		}
-    		if (ctx.mode === undefined && !('mode' in props)) {
-    			console.warn("<Button> was created without expected prop 'mode'");
     		}
     	}
 
@@ -853,10 +861,11 @@ var app = (function () {
     		props: {
     		mode: "outline",
     		type: "button",
-    		text: "Favourite"
+    		text: ctx.isFavourite ? 'Unfavourite' : 'Favourite'
     	},
     		$$inline: true
     	});
+    	button2.$on("click", ctx.click_handler);
 
     	return {
     		c: function create() {
@@ -885,27 +894,27 @@ var app = (function () {
     			t10 = space();
     			button2.$$.fragment.c();
     			h1.className = "svelte-1xvjpvv";
-    			add_location(h1, file$3, 73, 4, 1082);
+    			add_location(h1, file$3, 79, 4, 1274);
     			h2.className = "svelte-1xvjpvv";
-    			add_location(h2, file$3, 74, 4, 1104);
+    			add_location(h2, file$3, 80, 4, 1296);
     			p0.className = "svelte-1xvjpvv";
-    			add_location(p0, file$3, 75, 4, 1129);
+    			add_location(p0, file$3, 81, 4, 1321);
     			header.className = "svelte-1xvjpvv";
-    			add_location(header, file$3, 72, 2, 1068);
+    			add_location(header, file$3, 78, 2, 1260);
     			img.src = ctx.imageUrl;
     			img.alt = ctx.title;
     			img.className = "svelte-1xvjpvv";
-    			add_location(img, file$3, 78, 4, 1187);
+    			add_location(img, file$3, 84, 4, 1379);
     			div0.className = "image svelte-1xvjpvv";
-    			add_location(div0, file$3, 77, 2, 1162);
+    			add_location(div0, file$3, 83, 2, 1354);
     			p1.className = "svelte-1xvjpvv";
-    			add_location(p1, file$3, 81, 4, 1262);
+    			add_location(p1, file$3, 87, 4, 1454);
     			div1.className = "content svelte-1xvjpvv";
-    			add_location(div1, file$3, 80, 2, 1235);
+    			add_location(div1, file$3, 86, 2, 1427);
     			footer.className = "svelte-1xvjpvv";
-    			add_location(footer, file$3, 84, 2, 1298);
+    			add_location(footer, file$3, 90, 2, 1490);
     			article.className = "svelte-1xvjpvv";
-    			add_location(article, file$3, 71, 0, 1055);
+    			add_location(article, file$3, 77, 0, 1247);
     		},
 
     		l: function claim(nodes) {
@@ -968,6 +977,10 @@ var app = (function () {
     			var button0_changes = {};
     			if (changed.email) button0_changes.href = "mailTo:" + ctx.email;
     			button0.$set(button0_changes);
+
+    			var button2_changes = {};
+    			if (changed.isFavourite) button2_changes.text = ctx.isFavourite ? 'Unfavourite' : 'Favourite';
+    			button2.$set(button2_changes);
     		},
 
     		i: function intro(local) {
@@ -1003,40 +1016,58 @@ var app = (function () {
     }
 
     function instance$2($$self, $$props, $$invalidate) {
-    	/* Meetup-item component props */
-      let { title, subTitle, imageUrl, description, address, email } = $$props;
+    	
 
-    	const writable_props = ['title', 'subTitle', 'imageUrl', 'description', 'address', 'email'];
+      /* dispatch var used for forwarding events */
+      const dispatch = createEventDispatcher();
+
+      /* Meetup-item component props */
+      let { id, title, subTitle, imageUrl, description, address, email, isFavourite } = $$props;
+
+    	const writable_props = ['id', 'title', 'subTitle', 'imageUrl', 'description', 'address', 'email', 'isFavourite'];
     	Object.keys($$props).forEach(key => {
     		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<Meetup_Item> was created with unknown prop '${key}'`);
     	});
 
+    	function click_handler() {
+    		return dispatch('togglefavourite', id);
+    	}
+
     	$$self.$set = $$props => {
+    		if ('id' in $$props) $$invalidate('id', id = $$props.id);
     		if ('title' in $$props) $$invalidate('title', title = $$props.title);
     		if ('subTitle' in $$props) $$invalidate('subTitle', subTitle = $$props.subTitle);
     		if ('imageUrl' in $$props) $$invalidate('imageUrl', imageUrl = $$props.imageUrl);
     		if ('description' in $$props) $$invalidate('description', description = $$props.description);
     		if ('address' in $$props) $$invalidate('address', address = $$props.address);
     		if ('email' in $$props) $$invalidate('email', email = $$props.email);
+    		if ('isFavourite' in $$props) $$invalidate('isFavourite', isFavourite = $$props.isFavourite);
     	};
 
     	return {
+    		dispatch,
+    		id,
     		title,
     		subTitle,
     		imageUrl,
     		description,
     		address,
-    		email
+    		email,
+    		isFavourite,
+    		click_handler
     	};
     }
 
     class Meetup_Item extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$2, create_fragment$3, safe_not_equal, ["title", "subTitle", "imageUrl", "description", "address", "email"]);
+    		init(this, options, instance$2, create_fragment$3, safe_not_equal, ["id", "title", "subTitle", "imageUrl", "description", "address", "email", "isFavourite"]);
 
     		const { ctx } = this.$$;
     		const props = options.props || {};
+    		if (ctx.id === undefined && !('id' in props)) {
+    			console.warn("<Meetup_Item> was created without expected prop 'id'");
+    		}
     		if (ctx.title === undefined && !('title' in props)) {
     			console.warn("<Meetup_Item> was created without expected prop 'title'");
     		}
@@ -1055,6 +1086,17 @@ var app = (function () {
     		if (ctx.email === undefined && !('email' in props)) {
     			console.warn("<Meetup_Item> was created without expected prop 'email'");
     		}
+    		if (ctx.isFavourite === undefined && !('isFavourite' in props)) {
+    			console.warn("<Meetup_Item> was created without expected prop 'isFavourite'");
+    		}
+    	}
+
+    	get id() {
+    		throw new Error("<Meetup_Item>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set id(value) {
+    		throw new Error("<Meetup_Item>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
 
     	get title() {
@@ -1104,6 +1146,14 @@ var app = (function () {
     	set email(value) {
     		throw new Error("<Meetup_Item>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
+
+    	get isFavourite() {
+    		throw new Error("<Meetup_Item>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set isFavourite(value) {
+    		throw new Error("<Meetup_Item>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
     }
 
     /* src\components\Meetup-grid.svelte generated by Svelte v3.5.1 */
@@ -1116,21 +1166,24 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (24:2) {#each meetups as meetup}
+    // (23:2) {#each meetups as meetup}
     function create_each_block(ctx) {
     	var current;
 
     	var meetupitem = new Meetup_Item({
     		props: {
+    		id: ctx.meetup.id,
     		title: ctx.meetup.title,
     		subTitle: ctx.meetup.subTitle,
     		description: ctx.meetup.description,
     		imageUrl: ctx.meetup.imageUrl,
     		address: ctx.meetup.address,
+    		isFavourite: ctx.meetup.isFavourite,
     		email: ctx.meetup.contactEmail
     	},
     		$$inline: true
     	});
+    	meetupitem.$on("togglefavourite", ctx.togglefavourite_handler);
 
     	return {
     		c: function create() {
@@ -1144,11 +1197,13 @@ var app = (function () {
 
     		p: function update(changed, ctx) {
     			var meetupitem_changes = {};
+    			if (changed.meetups) meetupitem_changes.id = ctx.meetup.id;
     			if (changed.meetups) meetupitem_changes.title = ctx.meetup.title;
     			if (changed.meetups) meetupitem_changes.subTitle = ctx.meetup.subTitle;
     			if (changed.meetups) meetupitem_changes.description = ctx.meetup.description;
     			if (changed.meetups) meetupitem_changes.imageUrl = ctx.meetup.imageUrl;
     			if (changed.meetups) meetupitem_changes.address = ctx.meetup.address;
+    			if (changed.meetups) meetupitem_changes.isFavourite = ctx.meetup.isFavourite;
     			if (changed.meetups) meetupitem_changes.email = ctx.meetup.contactEmail;
     			meetupitem.$set(meetupitem_changes);
     		},
@@ -1204,7 +1259,7 @@ var app = (function () {
     			}
     			section.id = "meetups";
     			section.className = "svelte-1ns8a2s";
-    			add_location(section, file$4, 22, 0, 370);
+    			add_location(section, file$4, 21, 0, 368);
     		},
 
     		l: function claim(nodes) {
@@ -1278,11 +1333,15 @@ var app = (function () {
     		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<Meetup_grid> was created with unknown prop '${key}'`);
     	});
 
+    	function togglefavourite_handler(event) {
+    		bubble($$self, event);
+    	}
+
     	$$self.$set = $$props => {
     		if ('meetups' in $$props) $$invalidate('meetups', meetups = $$props.meetups);
     	};
 
-    	return { meetups };
+    	return { meetups, togglefavourite_handler };
     }
 
     class Meetup_grid extends SvelteComponentDev {
@@ -1317,7 +1376,6 @@ var app = (function () {
 
     	var textinput0 = new TextInput({
     		props: {
-    		type: "text",
     		id: "title",
     		label: "Title",
     		value: ctx.title
@@ -1328,7 +1386,6 @@ var app = (function () {
 
     	var textinput1 = new TextInput({
     		props: {
-    		type: "text",
     		id: "subtitle",
     		label: "Subtitle",
     		value: ctx.subtitle
@@ -1339,7 +1396,6 @@ var app = (function () {
 
     	var textinput2 = new TextInput({
     		props: {
-    		type: "text",
     		id: "address",
     		label: "Address",
     		value: ctx.address
@@ -1350,7 +1406,6 @@ var app = (function () {
 
     	var textinput3 = new TextInput({
     		props: {
-    		type: "text",
     		id: "imageUrl",
     		label: "Image Url",
     		value: ctx.imageUrl
@@ -1373,7 +1428,6 @@ var app = (function () {
 
     	var textinput5 = new TextInput({
     		props: {
-    		type: "text",
     		id: "contact-email",
     		label: "Contact Email",
     		value: ctx.contactEmail
@@ -1391,6 +1445,7 @@ var app = (function () {
     		props: { meetups: ctx.meetups },
     		$$inline: true
     	});
+    	meetupgrid.$on("togglefavourite", ctx.toggleFavourite);
 
     	return {
     		c: function create() {
@@ -1414,9 +1469,9 @@ var app = (function () {
     			t7 = space();
     			meetupgrid.$$.fragment.c();
     			form.className = "svelte-1u939va";
-    			add_location(form, file$5, 66, 2, 1683);
+    			add_location(form, file$5, 83, 2, 2122);
     			main.className = "svelte-1u939va";
-    			add_location(main, file$5, 65, 0, 1673);
+    			add_location(main, file$5, 82, 0, 2112);
     			dispose = listen(form, "submit", prevent_default(ctx.addMeetup));
     		},
 
@@ -1553,7 +1608,8 @@ var app = (function () {
           description: "Meet up one, do thing, something. Anything.",
           imageUrl: "images/rota-alternativa-1663969-unsplash.jpg",
           address: "Somewhere other there, maybe.",
-          contactEmail: "email@email.com"
+          contactEmail: "email@email.com",
+          isFavourite: false
         },
         {
           id: "m2",
@@ -1562,7 +1618,8 @@ var app = (function () {
           description: "Meet up two, with a coastline.",
           imageUrl: "images/janis-karkossa-1668527-unsplash.jpg",
           address: "The coast, something something, 4005",
-          contactEmail: "coast@email.com2"
+          contactEmail: "coast@email.com2",
+          isFavourite: false
         }
       ];
 
@@ -1586,6 +1643,21 @@ var app = (function () {
         };
         /* unpack old meetup array into new meet up array to get Svelte to update the dom*/
         $$invalidate('meetups', meetups = [newMeetup, ...meetups]);
+      };
+
+      const toggleFavourite = (e) => {
+        const id = e.detail;
+
+        const meetupTarget =  meetups.find(m => m.id === id);
+
+        meetupTarget.isFavourite = !meetupTarget.isFavourite;
+
+        const meetupIndex = meetups.findIndex(m => m.id === id);
+        
+        const updatedMeetups = [...meetups];
+        updatedMeetups[meetupIndex] = meetupTarget;
+        $$invalidate('meetups', meetups = updatedMeetups);
+
       };
 
     	function input_handler(e) {
@@ -1633,6 +1705,7 @@ var app = (function () {
     		description,
     		contactEmail,
     		addMeetup,
+    		toggleFavourite,
     		input_handler,
     		input_handler_1,
     		input_handler_2,

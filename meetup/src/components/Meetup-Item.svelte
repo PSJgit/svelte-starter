@@ -1,14 +1,20 @@
 <script>
-
+  import { createEventDispatcher } from 'svelte';
   import Button from '../ui/Button.svelte';
 
+  /* dispatch var used for forwarding events */
+  const dispatch = createEventDispatcher();
+
   /* Meetup-item component props */
+  export let id;
   export let title;
   export let subTitle;
   export let imageUrl;
   export let description;
   export let address;
   export let email;
+  export let isFavourite;
+
 </script>
 
 <style>
@@ -85,6 +91,10 @@
   <footer>
     <Button href="mailTo:{email}" type={"button"} text={"Contact"}/>
     <Button type={"button"} text={"Show details"}/>
-    <Button mode={"outline"} type={"button"} text={"Favourite"}/>
+    <Button 
+      mode={"outline"} 
+      type={"button"} 
+      text={isFavourite ? 'Unfavourite' : 'Favourite'} 
+      on:click={() => dispatch('togglefavourite', id)}/>
   </footer>
 </article>

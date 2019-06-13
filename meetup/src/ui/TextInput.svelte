@@ -1,11 +1,11 @@
 <script>
   /* props */
-  export let controlType;
-  export let rows;
+  export let controlType = null;
+  export let rows = null;
   export let id;
   export let label;
   export let value;
-  export let type;
+  export let type = "text";
 </script>
 
 <style>
