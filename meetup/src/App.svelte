@@ -12,7 +12,8 @@
       description: "Meet up one, do thing, something. Anything.",
       imageUrl: "images/rota-alternativa-1663969-unsplash.jpg",
       address: "Somewhere other there, maybe.",
-      contactEmail: "email@email.com"
+      contactEmail: "email@email.com",
+      isFavourite: false
     },
     {
       id: "m2",
@@ -21,7 +22,8 @@
       description: "Meet up two, with a coastline.",
       imageUrl: "images/janis-karkossa-1668527-unsplash.jpg",
       address: "The coast, something something, 4005",
-      contactEmail: "coast@email.com2"
+      contactEmail: "coast@email.com2",
+      isFavourite: false
     }
   ];
 
@@ -46,6 +48,21 @@
     /* unpack old meetup array into new meet up array to get Svelte to update the dom*/
     meetups = [newMeetup, ...meetups];
   };
+
+  const toggleFavourite = (e) => {
+    const id = e.detail;
+
+    const meetupTarget =  meetups.find(m => m.id === id);
+
+    meetupTarget.isFavourite = !meetupTarget.isFavourite;
+
+    const meetupIndex = meetups.findIndex(m => m.id === id);
+    
+    const updatedMeetups = [...meetups];
+    updatedMeetups[meetupIndex] = meetupTarget;
+    meetups = updatedMeetups;
+
+  }
 </script>
 
 <style>
@@ -66,25 +83,21 @@
 <main>
   <form on:submit|preventDefault={addMeetup}>
     <TextInput
-      type={"text"}
       id={"title"}
       label={"Title"}
       value={title}
       on:input={e => (title = e.target.value)} />
     <TextInput
-      type={"text"}
       id={"subtitle"}
       label={"Subtitle"}
       value={subtitle}
       on:input={e => (subtitle = e.target.value)} />
     <TextInput
-      type={"text"}
       id={"address"}
       label={"Address"}
       value={address}
       on:input={e => (address = e.target.value)} />
     <TextInput
-      type={"text"}
       id={"imageUrl"}
       label={"Image Url"}
       value={imageUrl}
@@ -97,7 +110,6 @@
       value={description}
       on:input={e => (description = e.target.value)} />
     <TextInput
-      type={"text"}
       id={"contact-email"}
       label={"Contact Email"}
       value={contactEmail}
@@ -106,5 +118,5 @@
     <Button type={"submit"} text={"Save"}/>
   </form>
 
-  <MeetupGrid {meetups} />
+  <MeetupGrid {meetups} on:togglefavourite="{toggleFavourite}" />
 </main>
