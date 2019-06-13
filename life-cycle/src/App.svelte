@@ -34,9 +34,7 @@
 	  const selectionEnd = event.target.selectionEnd;
 	  const value = event.target.value
 
-	  text = value.slice(0, selectionStart) +
-			 value.slice(selectionStart, selectionEnd).toUpperCase() +
-			 value.slice(selectionEnd);
+	  text = value.slice(0, selectionStart) + value.slice(selectionStart, selectionEnd).toUpperCase() + value.slice(selectionEnd);
 
 	  tick().then(() => {
 		event.target.selectionStart = selectionStart;
