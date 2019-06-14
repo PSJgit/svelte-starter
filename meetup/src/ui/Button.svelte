@@ -4,6 +4,7 @@
   export let text;
   export let href = null;
   export let mode = null;
+  export let color = null;
 </script>
 
 <style>
@@ -163,5 +164,5 @@
 {#if href}  
   <a {href}>{text}</a>
   {:else}
-  <button class="{mode}" {type} on:click>{text}</button>
+  <button class="{mode} {color}" {type} on:click>{text}</button>
 {/if}
