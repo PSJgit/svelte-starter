@@ -1,6 +1,39 @@
+<article>
+  <header>
+    <h1>
+      {title} 
+      {#if isFavourite}
+        <Badge>
+          FAVOURITE
+        </Badge>
+      {/if}
+    </h1>
+    <h2>{subtitle}</h2>
+    <p>{address}</p>
+  </header>
+  <div class="image">
+    <img src={imageUrl} alt={title} />
+  </div>
+  <div class="content">
+    <p>{description}</p>
+
+  </div>
+  <footer>
+    <Button href="mailTo:{email}" type={"button"} text={"Contact"}/>
+    <Button type={"button"} text={"Show details"}/>
+    <Button 
+      mode={"outline"} 
+      type={"button"} 
+      color={isFavourite ? null : 'success'}
+      text={isFavourite ? 'Unfavourite' : 'Favourite'} 
+      on:click={() => dispatch('togglefavourite', id)}/>
+  </footer>
+</article>
+
 <script>
   import { createEventDispatcher } from 'svelte';
   import Button from '../ui/Button.svelte';
+  import Badge from '../ui/Badge.svelte';
 
   /* dispatch var used for forwarding events */
   const dispatch = createEventDispatcher();
@@ -8,7 +41,7 @@
   /* Meetup-item component props */
   export let id;
   export let title;
-  export let subTitle;
+  export let subtitle;
   export let imageUrl;
   export let description;
   export let address;
@@ -75,26 +108,4 @@
   }
 </style>
 
-<article>
-  <header>
-    <h1>{title}</h1>
-    <h2>{subTitle}</h2>
-    <p>{address}</p>
-  </header>
-  <div class="image">
-    <img src={imageUrl} alt={title} />
-  </div>
-  <div class="content">
-    <p>{description}</p>
 
-  </div>
-  <footer>
-    <Button href="mailTo:{email}" type={"button"} text={"Contact"}/>
-    <Button type={"button"} text={"Show details"}/>
-    <Button 
-      mode={"outline"} 
-      type={"button"} 
-      text={isFavourite ? 'Unfavourite' : 'Favourite'} 
-      on:click={() => dispatch('togglefavourite', id)}/>
-  </footer>
-</article>

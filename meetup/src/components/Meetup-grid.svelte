@@ -24,7 +24,7 @@
     <MeetupItem
       id={meetup.id}
       title={meetup.title}
-      subTitle={meetup.subTitle}
+      subtitle={meetup.subtitle}
       description={meetup.description}
       imageUrl={meetup.imageUrl}
       address={meetup.address}

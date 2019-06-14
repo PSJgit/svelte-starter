@@ -1,14 +1,32 @@
+<Header />
+
+<main>
+  <div class="meetup-controls">
+    <Button text="New meetup" on:click="{() => editMode = 'add'}"></Button>
+  </div>
+
+  {#if editMode === 'add'}
+    <EditMeetup on:save='{addMeetup}'/>
+  {:else}
+    <MeetupGrid {meetups} on:togglefavourite="{toggleFavourite}" />
+  {/if}
+  
+</main>
+
 <script>
   import Header from "./ui/Header.svelte";
-  import TextInput from "./ui/TextInput.svelte";
-  import Button from "./ui/Button.svelte";
+  import EditMeetup from "./components/Edit-meetup.svelte";
   import MeetupGrid from "./components/Meetup-grid.svelte";
+  import Button from "./ui/Button.svelte";
+
+
+  let editMode;
 
   let meetups = [
     {
       id: "m1",
       title: "Meet up title one",
-      subTitle: "The subtitle for the first one",
+      subtitle: "The subtitle for the first one",
       description: "Meet up one, do thing, something. Anything.",
       imageUrl: "images/rota-alternativa-1663969-unsplash.jpg",
       address: "Somewhere other there, maybe.",
@@ -18,7 +36,7 @@
     {
       id: "m2",
       title: "Meet up title two",
-      subTitle: "Another subtitle",
+      subtitle: "Another subtitle",
       description: "Meet up two, with a coastline.",
       imageUrl: "images/janis-karkossa-1668527-unsplash.jpg",
       address: "The coast, something something, 4005",
@@ -27,32 +45,31 @@
     }
   ];
 
-  /* init vars for storing data from form input via bind directive */
-  let title = "";
-  let subtitle = "";
-  let address = "";
-  let imageUrl = "";
-  let description = "";
-  let contactEmail = "";
-
-  const addMeetup = () => {
+  const addMeetup = (e) => {
     let newMeetup = {
       id: Math.random().toString(),
-      title: title,
-      subtitle: subtitle,
-      description: description,
-      imageUrl: imageUrl,
-      address: address,
-      contactEmail: contactEmail
+      title: e.detail.title,
+      subtitle: e.detail.subtitle,
+      description: e.detail.description,
+      imageUrl: e.detail.imageUrl,
+      address: e.detail.address,
+      contactEmail: e.detail.contactEmail
     };
-    /* unpack old meetup array into new meet up array to get Svelte to update the dom*/
     meetups = [newMeetup, ...meetups];
+    editMode = null;
   };
 
   const toggleFavourite = (e) => {
     const id = e.detail;
-
-    const meetupTarget =  meetups.find(m => m.id === id);
+    const toggleFav = meetups.map( (obj) => {
+      if (obj.id === id) {
+        obj.isFavourite = !obj.isFavourite;
+      }
+      return obj;
+    });
+    meetups = [...toggleFav]
+ 
+    /* const meetupTarget =  {...meetups.find(m => m.id === id)};
 
     meetupTarget.isFavourite = !meetupTarget.isFavourite;
 
@@ -60,7 +77,7 @@
     
     const updatedMeetups = [...meetups];
     updatedMeetups[meetupIndex] = meetupTarget;
-    meetups = updatedMeetups;
+    meetups = updatedMeetups; */
 
   }
 </script>
@@ -76,47 +93,8 @@
     max-width: 90%;
     margin: auto;
   }
+  .meetup-controls {
+    margin: 1rem;
+  }
 </style>
 
-<Header />
-
-<main>
-  <form on:submit|preventDefault={addMeetup}>
-    <TextInput
-      id={"title"}
-      label={"Title"}
-      value={title}
-      on:input={e => (title = e.target.value)} />
-    <TextInput
-      id={"subtitle"}
-      label={"Subtitle"}
-      value={subtitle}
-      on:input={e => (subtitle = e.target.value)} />
-    <TextInput
-      id={"address"}
-      label={"Address"}
-      value={address}
-      on:input={e => (address = e.target.value)} />
-    <TextInput
-      id={"imageUrl"}
-      label={"Image Url"}
-      value={imageUrl}
-      on:input={e => (imageUrl = e.target.value)} />
-    <TextInput
-      controlType={"textarea"}
-      rows={"3"}
-      id={"description"}
-      label={"Description"}
-      value={description}
-      on:input={e => (description = e.target.value)} />
-    <TextInput
-      id={"contact-email"}
-      label={"Contact Email"}
-      value={contactEmail}
-      on:input={e => (contactEmail = e.target.value)} />
-    
-    <Button type={"submit"} text={"Save"}/>
-  </form>
-
-  <MeetupGrid {meetups} on:togglefavourite="{toggleFavourite}" />
-</main>
