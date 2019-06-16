@@ -19,14 +19,15 @@
 
   </div>
   <footer>
-    <Button href="mailTo:{email}" type={"button"} text={"Contact"}/>
-    <Button type={"button"} text={"Show details"}/>
+    <Button href="mailTo:{email}" type={"button"}>Contact</Button>
+    <Button type={"button"}>Show details</Button>
     <Button 
       mode={"outline"} 
       type={"button"} 
       color={isFavourite ? null : 'success'}
-      text={isFavourite ? 'Unfavourite' : 'Favourite'} 
-      on:click={() => dispatch('togglefavourite', id)}/>
+      on:click={() => dispatch('togglefavourite', id)}>
+        {isFavourite ? 'Unfavourite' : 'Favourite'} 
+    </Button>
   </footer>
 </article>
 

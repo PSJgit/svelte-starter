@@ -2,11 +2,11 @@
 
 <main>
   <div class="meetup-controls">
-    <Button text="New meetup" on:click="{() => editMode = 'add'}"></Button>
+    <Button on:click="{() => editMode = 'add'}">New meetup</Button>
   </div>
 
   {#if editMode === 'add'}
-    <EditMeetup on:save='{addMeetup}'/>
+    <EditMeetup on:save='{addMeetup}' on:cancel={cancelEdit}/>
   {:else}
     <MeetupGrid {meetups} on:togglefavourite="{toggleFavourite}" />
   {/if}
@@ -15,11 +15,10 @@
 
 <script>
   import Header from "./ui/Header.svelte";
+  import Button from "./ui/Button.svelte";
   import EditMeetup from "./components/Edit-meetup.svelte";
   import MeetupGrid from "./components/Meetup-grid.svelte";
-  import Button from "./ui/Button.svelte";
-
-
+  
   let editMode;
 
   let meetups = [
@@ -79,6 +78,10 @@
     updatedMeetups[meetupIndex] = meetupTarget;
     meetups = updatedMeetups; */
 
+  }
+
+  const cancelEdit = () => {
+    editMode = null;
   }
 </script>
 
