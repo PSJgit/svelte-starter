@@ -35,7 +35,8 @@
             on:input={e => (contactEmail = e.target.value)} />
     </form>
     <div slot='footer'>
-        <Button type={"submit"}>Save</Button>
+        <Button type={"submit"} mode="outline" on:click={cancel}>Cancel</Button>
+        <Button type={"submit"} on:click={submitForm}>Save</Button>
     </div>
 </Modal>
 
@@ -63,6 +64,10 @@
             description: description,
             contactEmail: contactEmail
         })
+    }
+
+    const cancel = () => {
+        dispatch('cancel');
     }
 </script>
 
