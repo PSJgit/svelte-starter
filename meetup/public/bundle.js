@@ -99,6 +99,9 @@ var app = (function () {
         if (text.data !== data)
             text.data = data;
     }
+    function toggle_class(element, name, toggle) {
+        element.classList[toggle ? 'add' : 'remove'](name);
+    }
     function custom_event(type, detail) {
         const e = document.createEvent('CustomEvent');
         e.initCustomEvent(type, false, false, detail);
@@ -663,7 +666,7 @@ var app = (function () {
 
     const file$2 = "src\\ui\\TextInput.svelte";
 
-    // (48:2) {:else}
+    // (60:2) {:else}
     function create_else_block$1(ctx) {
     	var label_1, t0, t1, input, dispose;
 
@@ -674,13 +677,14 @@ var app = (function () {
     			t1 = space();
     			input = element("input");
     			label_1.htmlFor = ctx.label;
-    			label_1.className = "svelte-10fbh92";
-    			add_location(label_1, file$2, 48, 4, 916);
+    			label_1.className = "svelte-jrobkm";
+    			add_location(label_1, file$2, 60, 4, 1142);
     			attr(input, "type", ctx.type);
     			input.id = ctx.id;
     			input.value = ctx.value;
-    			input.className = "svelte-10fbh92";
-    			add_location(input, file$2, 49, 4, 956);
+    			input.className = "svelte-jrobkm";
+    			toggle_class(input, "invalid", !ctx.valid);
+    			add_location(input, file$2, 61, 4, 1182);
     			dispose = listen(input, "input", ctx.input_handler_1);
     		},
 
@@ -708,6 +712,10 @@ var app = (function () {
     			if (changed.value) {
     				input.value = ctx.value;
     			}
+
+    			if (changed.valid) {
+    				toggle_class(input, "invalid", !ctx.valid);
+    			}
     		},
 
     		d: function destroy(detaching) {
@@ -722,8 +730,8 @@ var app = (function () {
     	};
     }
 
-    // (45:2) {#if controlType === 'textarea'}
-    function create_if_block$1(ctx) {
+    // (57:2) {#if controlType === 'textarea'}
+    function create_if_block_1(ctx) {
     	var label_1, t0, t1, textarea, dispose;
 
     	return {
@@ -733,13 +741,14 @@ var app = (function () {
     			t1 = space();
     			textarea = element("textarea");
     			label_1.htmlFor = ctx.id;
-    			label_1.className = "svelte-10fbh92";
-    			add_location(label_1, file$2, 45, 4, 821);
+    			label_1.className = "svelte-jrobkm";
+    			add_location(label_1, file$2, 57, 4, 1024);
     			textarea.rows = ctx.rows;
     			textarea.id = ctx.id;
     			textarea.value = ctx.value;
-    			textarea.className = "svelte-10fbh92";
-    			add_location(textarea, file$2, 46, 4, 858);
+    			textarea.className = "svelte-jrobkm";
+    			toggle_class(textarea, "invalid", !ctx.valid);
+    			add_location(textarea, file$2, 58, 4, 1061);
     			dispose = listen(textarea, "input", ctx.input_handler);
     		},
 
@@ -770,6 +779,10 @@ var app = (function () {
     			if (changed.value) {
     				textarea.value = ctx.value;
     			}
+
+    			if (changed.valid) {
+    				toggle_class(textarea, "invalid", !ctx.valid);
+    			}
     		},
 
     		d: function destroy(detaching) {
@@ -784,23 +797,58 @@ var app = (function () {
     	};
     }
 
+    // (65:2) {#if validityMessage && !valid}
+    function create_if_block$1(ctx) {
+    	var p, t;
+
+    	return {
+    		c: function create() {
+    			p = element("p");
+    			t = text(ctx.validityMessage);
+    			p.className = "error-message svelte-jrobkm";
+    			add_location(p, file$2, 65, 4, 1295);
+    		},
+
+    		m: function mount(target, anchor) {
+    			insert(target, p, anchor);
+    			append(p, t);
+    		},
+
+    		p: function update(changed, ctx) {
+    			if (changed.validityMessage) {
+    				set_data(t, ctx.validityMessage);
+    			}
+    		},
+
+    		d: function destroy(detaching) {
+    			if (detaching) {
+    				detach(p);
+    			}
+    		}
+    	};
+    }
+
     function create_fragment$2(ctx) {
-    	var div;
+    	var div, t;
 
     	function select_block_type(ctx) {
-    		if (ctx.controlType === 'textarea') return create_if_block$1;
+    		if (ctx.controlType === 'textarea') return create_if_block_1;
     		return create_else_block$1;
     	}
 
     	var current_block_type = select_block_type(ctx);
-    	var if_block = current_block_type(ctx);
+    	var if_block0 = current_block_type(ctx);
+
+    	var if_block1 = (ctx.validityMessage && !ctx.valid) && create_if_block$1(ctx);
 
     	return {
     		c: function create() {
     			div = element("div");
-    			if_block.c();
-    			div.className = "form-control svelte-10fbh92";
-    			add_location(div, file$2, 43, 0, 753);
+    			if_block0.c();
+    			t = space();
+    			if (if_block1) if_block1.c();
+    			div.className = "form-control svelte-jrobkm";
+    			add_location(div, file$2, 55, 0, 956);
     		},
 
     		l: function claim(nodes) {
@@ -809,19 +857,34 @@ var app = (function () {
 
     		m: function mount(target, anchor) {
     			insert(target, div, anchor);
-    			if_block.m(div, null);
+    			if_block0.m(div, null);
+    			append(div, t);
+    			if (if_block1) if_block1.m(div, null);
     		},
 
     		p: function update(changed, ctx) {
-    			if (current_block_type === (current_block_type = select_block_type(ctx)) && if_block) {
-    				if_block.p(changed, ctx);
+    			if (current_block_type === (current_block_type = select_block_type(ctx)) && if_block0) {
+    				if_block0.p(changed, ctx);
     			} else {
-    				if_block.d(1);
-    				if_block = current_block_type(ctx);
-    				if (if_block) {
-    					if_block.c();
-    					if_block.m(div, null);
+    				if_block0.d(1);
+    				if_block0 = current_block_type(ctx);
+    				if (if_block0) {
+    					if_block0.c();
+    					if_block0.m(div, t);
     				}
+    			}
+
+    			if (ctx.validityMessage && !ctx.valid) {
+    				if (if_block1) {
+    					if_block1.p(changed, ctx);
+    				} else {
+    					if_block1 = create_if_block$1(ctx);
+    					if_block1.c();
+    					if_block1.m(div, null);
+    				}
+    			} else if (if_block1) {
+    				if_block1.d(1);
+    				if_block1 = null;
     			}
     		},
 
@@ -833,16 +896,17 @@ var app = (function () {
     				detach(div);
     			}
 
-    			if_block.d();
+    			if_block0.d();
+    			if (if_block1) if_block1.d();
     		}
     	};
     }
 
     function instance$1($$self, $$props, $$invalidate) {
     	/* props */
-      let { controlType = null, rows = null, id, label, value, type = "text" } = $$props;
+      let { controlType = null, rows = null, id, label, value, type = "text", valid = true, validityMessage = '' } = $$props;
 
-    	const writable_props = ['controlType', 'rows', 'id', 'label', 'value', 'type'];
+    	const writable_props = ['controlType', 'rows', 'id', 'label', 'value', 'type', 'valid', 'validityMessage'];
     	Object.keys($$props).forEach(key => {
     		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<TextInput> was created with unknown prop '${key}'`);
     	});
@@ -862,6 +926,8 @@ var app = (function () {
     		if ('label' in $$props) $$invalidate('label', label = $$props.label);
     		if ('value' in $$props) $$invalidate('value', value = $$props.value);
     		if ('type' in $$props) $$invalidate('type', type = $$props.type);
+    		if ('valid' in $$props) $$invalidate('valid', valid = $$props.valid);
+    		if ('validityMessage' in $$props) $$invalidate('validityMessage', validityMessage = $$props.validityMessage);
     	};
 
     	return {
@@ -871,6 +937,8 @@ var app = (function () {
     		label,
     		value,
     		type,
+    		valid,
+    		validityMessage,
     		input_handler,
     		input_handler_1
     	};
@@ -879,7 +947,7 @@ var app = (function () {
     class TextInput extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$1, create_fragment$2, safe_not_equal, ["controlType", "rows", "id", "label", "value", "type"]);
+    		init(this, options, instance$1, create_fragment$2, safe_not_equal, ["controlType", "rows", "id", "label", "value", "type", "valid", "validityMessage"]);
 
     		const { ctx } = this.$$;
     		const props = options.props || {};
@@ -939,6 +1007,22 @@ var app = (function () {
     	}
 
     	set type(value) {
+    		throw new Error("<TextInput>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get valid() {
+    		throw new Error("<TextInput>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set valid(value) {
+    		throw new Error("<TextInput>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	get validityMessage() {
+    		throw new Error("<TextInput>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set validityMessage(value) {
     		throw new Error("<TextInput>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
@@ -1163,7 +1247,28 @@ var app = (function () {
 
     const file$4 = "src\\components\\Edit-meetup.svelte";
 
-    // (38:8) <Button type={"submit"}>
+    // (40:8) <Button type={"submit"} mode="outline" on:click={cancel}>
+    function create_default_slot_2(ctx) {
+    	var t;
+
+    	return {
+    		c: function create() {
+    			t = text("Cancel");
+    		},
+
+    		m: function mount(target, anchor) {
+    			insert(target, t, anchor);
+    		},
+
+    		d: function destroy(detaching) {
+    			if (detaching) {
+    				detach(t);
+    			}
+    		}
+    	};
+    }
+
+    // (41:8) <Button type={"submit"} on:click={submitForm}>
     function create_default_slot_1(ctx) {
     	var t;
 
@@ -1184,11 +1289,22 @@ var app = (function () {
     	};
     }
 
-    // (37:4) <div slot='footer'>
+    // (39:4) <div slot='footer'>
     function create_footer_slot(ctx) {
-    	var div, current;
+    	var div, t, current;
 
-    	var button = new Button({
+    	var button0 = new Button({
+    		props: {
+    		type: "submit",
+    		mode: "outline",
+    		$$slots: { default: [create_default_slot_2] },
+    		$$scope: { ctx }
+    	},
+    		$$inline: true
+    	});
+    	button0.$on("click", ctx.cancel);
+
+    	var button1 = new Button({
     		props: {
     		type: "submit",
     		$$slots: { default: [create_default_slot_1] },
@@ -1196,36 +1312,48 @@ var app = (function () {
     	},
     		$$inline: true
     	});
+    	button1.$on("click", ctx.submitForm);
 
     	return {
     		c: function create() {
     			div = element("div");
-    			button.$$.fragment.c();
+    			button0.$$.fragment.c();
+    			t = space();
+    			button1.$$.fragment.c();
     			attr(div, "slot", "footer");
-    			add_location(div, file$4, 36, 4, 1211);
+    			add_location(div, file$4, 38, 4, 1289);
     		},
 
     		m: function mount(target, anchor) {
     			insert(target, div, anchor);
-    			mount_component(button, div, null);
+    			mount_component(button0, div, null);
+    			append(div, t);
+    			mount_component(button1, div, null);
     			current = true;
     		},
 
     		p: function update(changed, ctx) {
-    			var button_changes = {};
-    			if (changed.$$scope) button_changes.$$scope = { changed, ctx };
-    			button.$set(button_changes);
+    			var button0_changes = {};
+    			if (changed.$$scope) button0_changes.$$scope = { changed, ctx };
+    			button0.$set(button0_changes);
+
+    			var button1_changes = {};
+    			if (changed.$$scope) button1_changes.$$scope = { changed, ctx };
+    			button1.$set(button1_changes);
     		},
 
     		i: function intro(local) {
     			if (current) return;
-    			button.$$.fragment.i(local);
+    			button0.$$.fragment.i(local);
+
+    			button1.$$.fragment.i(local);
 
     			current = true;
     		},
 
     		o: function outro(local) {
-    			button.$$.fragment.o(local);
+    			button0.$$.fragment.o(local);
+    			button1.$$.fragment.o(local);
     			current = false;
     		},
 
@@ -1234,7 +1362,9 @@ var app = (function () {
     				detach(div);
     			}
 
-    			button.$destroy();
+    			button0.$destroy();
+
+    			button1.$destroy();
     		}
     	};
     }
@@ -1247,6 +1377,8 @@ var app = (function () {
     		props: {
     		id: "title",
     		label: "Title",
+    		valid: true,
+    		validityMessage: "please add something",
     		value: ctx.title
     	},
     		$$inline: true
@@ -1498,6 +1630,10 @@ var app = (function () {
             });
         };
 
+        const cancel = () => {
+            dispatch('cancel');
+        };
+
     	function cancel_handler(event) {
     		bubble($$self, event);
     	}
@@ -1546,6 +1682,7 @@ var app = (function () {
     		description,
     		contactEmail,
     		submitForm,
+    		cancel,
     		cancel_handler,
     		input_handler,
     		input_handler_1,
@@ -1708,7 +1845,7 @@ var app = (function () {
     }
 
     // (22:4) <Button href="mailTo:{email}" type={"button"}>
-    function create_default_slot_2(ctx) {
+    function create_default_slot_2$1(ctx) {
     	var t;
 
     	return {
@@ -1785,7 +1922,7 @@ var app = (function () {
     		props: {
     		href: "mailTo:" + ctx.email,
     		type: "button",
-    		$$slots: { default: [create_default_slot_2] },
+    		$$slots: { default: [create_default_slot_2$1] },
     		$$scope: { ctx }
     	},
     		$$inline: true
