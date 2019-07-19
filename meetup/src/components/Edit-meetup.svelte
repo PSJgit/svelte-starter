@@ -4,6 +4,8 @@
         <TextInput
             id={"title"}
             label={"Title"}
+            valid={true}
+            validityMessage="please add something"
             value={title}
             on:input={e => (title = e.target.value)} />
         <TextInput
