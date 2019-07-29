@@ -1,103 +1,58 @@
-<Header />
-
-<main>
-  <div class="meetup-controls">
-    <Button on:click="{() => editMode = 'add'}">New meetup</Button>
-  </div>
-
-  {#if editMode === 'add'}
-    <EditMeetup on:save='{addMeetup}' on:cancel={cancelEdit}/>
-  {:else}
-    <MeetupGrid {meetups} on:togglefavourite="{toggleFavourite}" />
-  {/if}
-  
-</main>
-
 <script>
-  import Header from "./ui/Header.svelte";
-  import Button from "./ui/Button.svelte";
-  import EditMeetup from "./components/Edit-meetup.svelte";
-  import MeetupGrid from "./components/Meetup-grid.svelte";
-  
+  import meetups from "./Meetups/meetups-store.js";
+  import Header from "./UI/Header.svelte";
+  import MeetupGrid from "./Meetups/MeetupGrid.svelte";
+  import TextInput from "./UI/TextInput.svelte";
+  import Button from "./UI/Button.svelte";
+  import EditMeetup from "./Meetups/EditMeetup.svelte";
+
+  // let meetups = ;
+
   let editMode;
 
-  let meetups = [
-    {
-      id: "m1",
-      title: "Meet up title one",
-      subtitle: "The subtitle for the first one",
-      description: "Meet up one, do thing, something. Anything.",
-      imageUrl: "images/rota-alternativa-1663969-unsplash.jpg",
-      address: "Somewhere other there, maybe.",
-      contactEmail: "email@email.com",
-      isFavourite: false
-    },
-    {
-      id: "m2",
-      title: "Meet up title two",
-      subtitle: "Another subtitle",
-      description: "Meet up two, with a coastline.",
-      imageUrl: "images/janis-karkossa-1668527-unsplash.jpg",
-      address: "The coast, something something, 4005",
-      contactEmail: "coast@email.com2",
-      isFavourite: false
-    }
-  ];
-
-  const addMeetup = (e) => {
-    let newMeetup = {
-      id: Math.random().toString(),
-      title: e.detail.title,
-      subtitle: e.detail.subtitle,
-      description: e.detail.description,
-      imageUrl: e.detail.imageUrl,
-      address: e.detail.address,
-      contactEmail: e.detail.contactEmail
+  function addMeetup(event) {
+    const meetupData = {
+      title: event.detail.title,
+      subtitle: event.detail.subtitle,
+      description: event.detail.description,
+      imageUrl: event.detail.imageUrl,
+      contactEmail: event.detail.email,
+      address: event.detail.address
     };
-    meetups = [newMeetup, ...meetups];
+
+    // meetups.push(newMeetup); // DOES NOT WORK!
+    meetups.addMeetup(meetupData);
     editMode = null;
-  };
-
-  const toggleFavourite = (e) => {
-    const id = e.detail;
-    const toggleFav = meetups.map( (obj) => {
-      if (obj.id === id) {
-        obj.isFavourite = !obj.isFavourite;
-      }
-      return obj;
-    });
-    meetups = [...toggleFav]
- 
-    /* const meetupTarget =  {...meetups.find(m => m.id === id)};
-
-    meetupTarget.isFavourite = !meetupTarget.isFavourite;
-
-    const meetupIndex = meetups.findIndex(m => m.id === id);
-    
-    const updatedMeetups = [...meetups];
-    updatedMeetups[meetupIndex] = meetupTarget;
-    meetups = updatedMeetups; */
-
   }
 
-  const cancelEdit = () => {
+  function cancelEdit() {
     editMode = null;
+  }
+
+  function toggleFavorite(event) {
+    const id = event.detail;
+    meetups.toggleFavorite(id);
   }
 </script>
 
 <style>
-  section,
   main {
     margin-top: 5rem;
   }
 
-  form {
-    width: 30rem;
-    max-width: 90%;
-    margin: auto;
-  }
   .meetup-controls {
     margin: 1rem;
   }
 </style>
 
+<Header />
+
+<main>
+  <div class="meetup-controls">
+    <Button on:click={() => (editMode = 'add')}>New Meetup</Button>
+  </div>
+  {#if editMode === 'add'}
+    <EditMeetup on:save={addMeetup} on:cancel={cancelEdit} />
+  {/if}
+  <MeetupGrid meetups={$meetups} on:togglefavorite={toggleFavorite} />
+</main>
