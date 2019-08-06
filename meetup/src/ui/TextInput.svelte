@@ -1,13 +1,14 @@
 <script>
-  /* props */
   export let controlType = null;
-  export let rows = null;
   export let id;
   export let label;
+  export let rows = null;
   export let value;
   export let type = "text";
   export let valid = true;
-  export let validityMessage = '';
+  export let validityMessage = "";
+
+  let touched = false;
 </script>
 
 <style>
@@ -54,15 +55,13 @@
 </style>
 
 <div class="form-control">
+  <label for={id}>{label}</label>
   {#if controlType === 'textarea'}
-    <label for={id}>{label}</label>
-    <textarea class:invalid={!valid} {rows} {id} {value} on:input />
+    <textarea class:invalid="{!valid && touched}" {rows} {id} bind:value on:blur={() => touched = true} />
   {:else}
-    <label for={label}>{label}</label>
-    <input class:invalid={!valid} {type} {id} {value} on:input />
+    <input class:invalid="{!valid && touched}" {type} {id} {value} on:input on:blur={() => touched = true} />
   {/if}
-
-  {#if validityMessage && !valid}
-    <p class='error-message'>{validityMessage}</p>
+  {#if validityMessage && !valid && touched}
+    <p class="error-message">{validityMessage}</p>
   {/if}
 </div>
