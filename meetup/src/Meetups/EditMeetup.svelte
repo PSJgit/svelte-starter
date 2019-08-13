@@ -30,7 +30,6 @@
     emailValid;
 
   function submitForm() {
-
     const meetupData = {
       title: title,
       subtitle: subtitle,
@@ -40,8 +39,8 @@
       address: address
     };
 
+    // meetups.push(newMeetup); // DOES NOT WORK!
     meetups.addMeetup(meetupData);
-    
     dispatch("save");
   }
 
@@ -57,7 +56,7 @@
 </style>
 
 <Modal title="Edit Meetup Data" on:cancel>
-  <form on:submit|preventDefault={submitForm}>
+  <form on:submit={submitForm}>
     <TextInput
       id="title"
       label="Title"
@@ -104,6 +103,8 @@
   </form>
   <div slot="footer">
     <Button type="button" mode="outline" on:click={cancel}>Cancel</Button>
-    <Button type="button" on:click={submitForm} disabled={!formIsValid}>Save</Button>
+    <Button type="button" on:click={submitForm} disabled={!formIsValid}>
+      Save
+    </Button>
   </div>
 </Modal>
