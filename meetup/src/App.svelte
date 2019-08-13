@@ -13,6 +13,7 @@
   let page = "overview";
   let pageData = {};
 
+
   function addMeetup(event) {
     editMode = null;
   }
@@ -23,12 +24,14 @@
 
   function showDetails(event) {
     page = "details";
+
     pageData.id = event.detail;
   }
 
   function closeDetails() {
     page = 'overview';
     pageData = {};
+
   }
 </script>
 
@@ -55,5 +58,6 @@
     <MeetupGrid meetups={$meetups} on:showdetails={showDetails} />
   {:else}
     <MeetupDetail id={pageData.id} on:close={closeDetails} />
+
   {/if}
 </main>

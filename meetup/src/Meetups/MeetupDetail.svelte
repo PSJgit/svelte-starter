@@ -1,4 +1,5 @@
 <script>
+
   import { onDestroy, createEventDispatcher } from "svelte";
   import meetups from "./meetups-store.js";
   import Button from "../UI/Button.svelte";
@@ -74,3 +75,4 @@
     </Button>
   </div>
 </section>
+

@@ -3,6 +3,8 @@
   "file": "bundle.css",
   "sources": [
     "..\\src\\App.svelte",
+    "..\\src\\Meetups\\EditMeetup.svelte",
+    "..\\src\\Meetups\\MeetupGrid.svelte",
     "..\\src\\UI\\Header.svelte",
     "..\\src\\Meetups\\EditMeetup.svelte",
     "..\\src\\Meetups\\MeetupGrid.svelte",

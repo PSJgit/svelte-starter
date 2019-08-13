@@ -2,6 +2,7 @@
   import MeetupItem from "./MeetupItem.svelte";
 
   export let meetups;
+  console.log(meetups)
 </script>
 
 <style>
@@ -30,6 +31,8 @@
       email={meetup.contactEmail}
       address={meetup.address}
       isFav={meetup.isFavorite}
+
       on:showdetails />
+
   {/each}
 </section>
