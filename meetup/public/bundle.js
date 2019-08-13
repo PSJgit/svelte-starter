@@ -464,6 +464,21 @@ var app = (function () {
           return [newMeetup, ...items];
         });
       },
+      updateMeetup: (id, meetupData) => {
+        meetups.update(items => {
+          const meetupIndex = items.findIndex(i => i.id === id);
+          const updatedMeetup = {...items[meetupIndex], ...meetupData};
+          const updatedMeetups = [...items];
+          updatedMeetups[meetupIndex] = updatedMeetup;
+          return updatedMeetups;
+        });
+      },
+      removeMeetup: (id) => {
+        meetups.update(items => {
+          console.warn(items.filter(i => i.id !== id));
+          return items.filter(i => i.id !== id);
+        });
+      },
       toggleFavorite: id => {
         meetups.update(items => {
           const updatedMeetup = { ...items.find(m => m.id === id) };
@@ -968,15 +983,13 @@ var app = (function () {
     	};
     }
 
-
-    // (99:4) <Button href="mailto:{email}">
-
+    // (99:4) <Button mode="outline" type="button" on:click={() => dispatch('edit', id)}>
     function create_default_slot_2(ctx) {
     	var t;
 
     	return {
     		c: function create() {
-    			t = text("Contact");
+    			t = text("Edit");
     		},
 
     		m: function mount(target, anchor) {
@@ -1049,12 +1062,14 @@ var app = (function () {
 
     	var button0 = new Button({
     		props: {
-    		href: "mailto:" + ctx.email,
+    		mode: "outline",
+    		type: "button",
     		$$slots: { default: [create_default_slot_2] },
     		$$scope: { ctx }
     	},
     		$$inline: true
     	});
+    	button0.$on("click", ctx.click_handler);
 
     	var button1 = new Button({
     		props: {
@@ -1076,7 +1091,7 @@ var app = (function () {
     	},
     		$$inline: true
     	});
-    	button2.$on("click", ctx.click_handler);
+    	button2.$on("click", ctx.click_handler_1);
 
     	return {
     		c: function create() {
@@ -1208,7 +1223,6 @@ var app = (function () {
     			}
 
     			var button0_changes = {};
-    			if (changed.email) button0_changes.href = "mailto:" + ctx.email;
     			if (changed.$$scope) button0_changes.$$scope = { changed, ctx };
     			button0.$set(button0_changes);
 
@@ -1277,6 +1291,10 @@ var app = (function () {
 
 
     	function click_handler() {
+    		return dispatch('edit', id);
+    	}
+
+    	function click_handler_1() {
     		return dispatch('showdetails', id);
     	}
 
@@ -1303,7 +1321,8 @@ var app = (function () {
     		isFav,
     		dispatch,
     		toggleFavorite,
-    		click_handler
+    		click_handler,
+    		click_handler_1
     	};
     }
 
@@ -1434,6 +1453,7 @@ var app = (function () {
     		$$inline: true
     	});
     	meetupitem.$on("showdetails", ctx.showdetails_handler);
+    	meetupitem.$on("edit", ctx.edit_handler);
 
     	return {
     		c: function create() {
@@ -1578,11 +1598,19 @@ var app = (function () {
     		bubble($$self, event);
     	}
 
+    	function edit_handler(event) {
+    		bubble($$self, event);
+    	}
+
     	$$self.$set = $$props => {
     		if ('meetups' in $$props) $$invalidate('meetups', meetups = $$props.meetups);
     	};
 
-    	return { meetups, showdetails_handler };
+    	return {
+    		meetups,
+    		showdetails_handler,
+    		edit_handler
+    	};
     }
 
     class MeetupGrid extends SvelteComponentDev {
@@ -2208,8 +2236,8 @@ var app = (function () {
 
     const file$7 = "src\\Meetups\\EditMeetup.svelte";
 
-    // (105:4) <Button type="button" mode="outline" on:click={cancel}>
-    function create_default_slot_2$1(ctx) {
+    // (131:4) <Button type="button" mode="outline" on:click={cancel}>
+    function create_default_slot_3$1(ctx) {
     	var t;
 
     	return {
@@ -2229,8 +2257,8 @@ var app = (function () {
     	};
     }
 
-    // (106:4) <Button type="button" on:click={submitForm} disabled={!formIsValid}>
-    function create_default_slot_1$1(ctx) {
+    // (132:4) <Button type="button" on:click={submitForm} disabled={!formIsValid}>
+    function create_default_slot_2$1(ctx) {
     	var t;
 
     	return {
@@ -2250,15 +2278,84 @@ var app = (function () {
     	};
     }
 
-    // (104:2) <div slot="footer">
+    // (135:4) {#if id}
+    function create_if_block$3(ctx) {
+    	var current;
+
+    	var button = new Button({
+    		props: {
+    		type: "button",
+    		$$slots: { default: [create_default_slot_1$1] },
+    		$$scope: { ctx }
+    	},
+    		$$inline: true
+    	});
+    	button.$on("click", ctx.deleteMeetup);
+
+    	return {
+    		c: function create() {
+    			button.$$.fragment.c();
+    		},
+
+    		m: function mount(target, anchor) {
+    			mount_component(button, target, anchor);
+    			current = true;
+    		},
+
+    		p: function update(changed, ctx) {
+    			var button_changes = {};
+    			if (changed.$$scope) button_changes.$$scope = { changed, ctx };
+    			button.$set(button_changes);
+    		},
+
+    		i: function intro(local) {
+    			if (current) return;
+    			button.$$.fragment.i(local);
+
+    			current = true;
+    		},
+
+    		o: function outro(local) {
+    			button.$$.fragment.o(local);
+    			current = false;
+    		},
+
+    		d: function destroy(detaching) {
+    			button.$destroy(detaching);
+    		}
+    	};
+    }
+
+    // (136:6) <Button type="button" on:click={deleteMeetup}>
+    function create_default_slot_1$1(ctx) {
+    	var t;
+
+    	return {
+    		c: function create() {
+    			t = text("Delete");
+    		},
+
+    		m: function mount(target, anchor) {
+    			insert(target, t, anchor);
+    		},
+
+    		d: function destroy(detaching) {
+    			if (detaching) {
+    				detach(t);
+    			}
+    		}
+    	};
+    }
+
+    // (130:2) <div slot="footer">
     function create_footer_slot(ctx) {
-    	var div, t, current;
+    	var div, t0, t1, current;
 
     	var button0 = new Button({
     		props: {
     		type: "button",
     		mode: "outline",
-    		$$slots: { default: [create_default_slot_2$1] },
+    		$$slots: { default: [create_default_slot_3$1] },
     		$$scope: { ctx }
     	},
     		$$inline: true
@@ -2269,30 +2366,34 @@ var app = (function () {
     		props: {
     		type: "button",
     		disabled: !ctx.formIsValid,
-    		$$slots: { default: [create_default_slot_1$1] },
+    		$$slots: { default: [create_default_slot_2$1] },
     		$$scope: { ctx }
     	},
     		$$inline: true
     	});
     	button1.$on("click", ctx.submitForm);
 
+    	var if_block = (ctx.id) && create_if_block$3(ctx);
+
     	return {
     		c: function create() {
     			div = element("div");
     			button0.$$.fragment.c();
-    			t = space();
+    			t0 = space();
     			button1.$$.fragment.c();
+    			t1 = space();
+    			if (if_block) if_block.c();
     			attr(div, "slot", "footer");
-
-    			add_location(div, file$7, 103, 2, 2708);
-
+    			add_location(div, file$7, 129, 2, 3341);
     		},
 
     		m: function mount(target, anchor) {
     			insert(target, div, anchor);
     			mount_component(button0, div, null);
-    			append(div, t);
+    			append(div, t0);
     			mount_component(button1, div, null);
+    			append(div, t1);
+    			if (if_block) if_block.m(div, null);
     			current = true;
     		},
 
@@ -2305,6 +2406,27 @@ var app = (function () {
     			if (changed.formIsValid) button1_changes.disabled = !ctx.formIsValid;
     			if (changed.$$scope) button1_changes.$$scope = { changed, ctx };
     			button1.$set(button1_changes);
+
+    			if (ctx.id) {
+    				if (if_block) {
+    					if_block.p(changed, ctx);
+    					if_block.i(1);
+    				} else {
+    					if_block = create_if_block$3(ctx);
+    					if_block.c();
+    					if_block.i(1);
+    					if_block.m(div, null);
+    				}
+    			} else if (if_block) {
+    				group_outros();
+    				on_outro(() => {
+    					if_block.d(1);
+    					if_block = null;
+    				});
+
+    				if_block.o(1);
+    				check_outros();
+    			}
     		},
 
     		i: function intro(local) {
@@ -2313,12 +2435,14 @@ var app = (function () {
 
     			transition_in(button1.$$.fragment, local);
 
+    			if (if_block) if_block.i();
     			current = true;
     		},
 
     		o: function outro(local) {
-    			transition_out(button0.$$.fragment, local);
-    			transition_out(button1.$$.fragment, local);
+    			button0.$$.fragment.o(local);
+    			button1.$$.fragment.o(local);
+    			if (if_block) if_block.o();
     			current = false;
     		},
 
@@ -2329,12 +2453,14 @@ var app = (function () {
 
     			destroy_component(button0);
 
-    			destroy_component(button1);
+    			button1.$destroy();
+
+    			if (if_block) if_block.d();
     		}
     	};
     }
 
-    // (58:0) <Modal title="Edit Meetup Data" on:cancel>
+    // (84:0) <Modal title="Edit Meetup Data" on:cancel>
     function create_default_slot$2(ctx) {
     	var form, t0, t1, t2, t3, t4, updating_value, t5, current, dispose;
 
@@ -2436,7 +2562,7 @@ var app = (function () {
     			t5 = space();
 
     			form.className = "svelte-no1xoc";
-    			add_location(form, file$7, 58, 2, 1337);
+    			add_location(form, file$7, 84, 2, 1970);
     			dispose = listen(form, "submit", ctx.submitForm);
 
     		},
@@ -2577,7 +2703,7 @@ var app = (function () {
 
     		p: function update(changed, ctx) {
     			var modal_changes = {};
-    			if (changed.$$scope || changed.formIsValid || changed.descriptionValid || changed.description || changed.emailValid || changed.email || changed.imageUrlValid || changed.imageUrl || changed.addressValid || changed.address || changed.subtitleValid || changed.subtitle || changed.titleValid || changed.title) modal_changes.$$scope = { changed, ctx };
+    			if (changed.$$scope || changed.id || changed.formIsValid || changed.descriptionValid || changed.description || changed.emailValid || changed.email || changed.imageUrlValid || changed.imageUrl || changed.addressValid || changed.address || changed.subtitleValid || changed.subtitle || changed.titleValid || changed.title) modal_changes.$$scope = { changed, ctx };
     			modal.$set(modal_changes);
     		},
 
@@ -2602,12 +2728,29 @@ var app = (function () {
     function instance$6($$self, $$props, $$invalidate) {
     	
 
+      let { id = null } = $$props;
+
       let title = "";
       let subtitle = "";
       let address = "";
       let email = "";
       let description = "";
       let imageUrl = "";
+
+      if (id) {
+        const unsubscribe = customMeetupsStore.subscribe(items => {
+          const selectedMeetup = items.find(i => i.id === id);
+          console.warn(selectedMeetup);
+          $$invalidate('title', title = selectedMeetup.title);
+          $$invalidate('subtitle', subtitle = selectedMeetup.subtitle);
+          $$invalidate('address', address = selectedMeetup.address);
+          $$invalidate('email', email = selectedMeetup.contactEmail);
+          $$invalidate('description', description = selectedMeetup.description);
+          $$invalidate('imageUrl', imageUrl = selectedMeetup.imageUrl);
+        });
+
+        unsubscribe();
+      }
 
       const dispatch = createEventDispatcher();
 
@@ -2622,13 +2765,27 @@ var app = (function () {
         };
 
         // meetups.push(newMeetup); // DOES NOT WORK!
-        customMeetupsStore.addMeetup(meetupData);
+        if (id) {
+          customMeetupsStore.updateMeetup(id, meetupData);
+        } else {
+          customMeetupsStore.addMeetup(meetupData);
+        }
         dispatch("save");
       }
 
       function cancel() {
         dispatch("cancel");
       }
+
+      function deleteMeetup() {
+        customMeetupsStore.removeMeetup(id);
+        dispatch("save");
+      }
+
+    	const writable_props = ['id'];
+    	Object.keys($$props).forEach(key => {
+    		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<EditMeetup> was created with unknown prop '${key}'`);
+    	});
 
     	function cancel_handler(event) {
     		bubble($$self, event);
@@ -2669,6 +2826,10 @@ var app = (function () {
     		$$invalidate('description', description);
     	}
 
+    	$$self.$set = $$props => {
+    		if ('id' in $$props) $$invalidate('id', id = $$props.id);
+    	};
+
     	let titleValid, subtitleValid, addressValid, descriptionValid, imageUrlValid, emailValid, formIsValid;
 
     	$$self.$$.update = ($$dirty = { title: 1, subtitle: 1, address: 1, description: 1, imageUrl: 1, email: 1, titleValid: 1, subtitleValid: 1, addressValid: 1, descriptionValid: 1, imageUrlValid: 1, emailValid: 1 }) => {
@@ -2688,6 +2849,7 @@ var app = (function () {
     	};
 
     	return {
+    		id,
     		title,
     		subtitle,
     		address,
@@ -2696,6 +2858,7 @@ var app = (function () {
     		imageUrl,
     		submitForm,
     		cancel,
+    		deleteMeetup,
     		titleValid,
     		subtitleValid,
     		addressValid,
@@ -2716,7 +2879,15 @@ var app = (function () {
     class EditMeetup extends SvelteComponentDev {
     	constructor(options) {
     		super(options);
-    		init(this, options, instance$6, create_fragment$7, safe_not_equal, []);
+    		init(this, options, instance$6, create_fragment$7, safe_not_equal, ["id"]);
+    	}
+
+    	get id() {
+    		throw new Error("<EditMeetup>: Props cannot be read directly from the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
+    	}
+
+    	set id(value) {
+    		throw new Error("<EditMeetup>: Props cannot be set directly on the component instance unless compiling with 'accessors: true' or '<svelte:options accessors/>'");
     	}
     }
 
@@ -2991,8 +3162,7 @@ var app = (function () {
 
     const file$9 = "src\\App.svelte";
 
-    // (56:2) {:else}
-
+    // (68:2) {:else}
     function create_else_block$2(ctx) {
     	var current;
 
@@ -3041,8 +3211,8 @@ var app = (function () {
     	};
     }
 
-    // (48:2) {#if page === 'overview'}
-    function create_if_block$3(ctx) {
+    // (56:2) {#if page === 'overview'}
+    function create_if_block$4(ctx) {
     	var div, t0, t1, current;
 
     	var button = new Button({
@@ -3054,13 +3224,14 @@ var app = (function () {
     	});
     	button.$on("click", ctx.click_handler);
 
-    	var if_block = (ctx.editMode === 'add') && create_if_block_1$1(ctx);
+    	var if_block = (ctx.editMode === 'edit') && create_if_block_1$1(ctx);
 
     	var meetupgrid = new MeetupGrid({
     		props: { meetups: ctx.$meetups },
     		$$inline: true
     	});
     	meetupgrid.$on("showdetails", ctx.showDetails);
+    	meetupgrid.$on("edit", ctx.startEdit);
 
     	return {
     		c: function create() {
@@ -3072,8 +3243,7 @@ var app = (function () {
     			meetupgrid.$$.fragment.c();
 
     			div.className = "meetup-controls svelte-1w77hyv";
-    			add_location(div, file$9, 48, 4, 886);
-
+    			add_location(div, file$9, 56, 4, 1033);
     		},
 
     		m: function mount(target, anchor) {
@@ -3091,8 +3261,7 @@ var app = (function () {
     			if (changed.$$scope) button_changes.$$scope = { changed, ctx };
     			button.$set(button_changes);
 
-    			if (ctx.editMode === 'add') {
-
+    			if (ctx.editMode === 'edit') {
     				if (if_block) {
     					if_block.p(changed, ctx);
     					if_block.i(1);
@@ -3163,7 +3332,7 @@ var app = (function () {
     	};
     }
 
-    // (50:6) <Button on:click={() => (editMode = 'add')}>
+    // (58:6) <Button on:click={() => (editMode = 'edit')}>
     function create_default_slot$4(ctx) {
     	var t;
 
@@ -3184,12 +3353,15 @@ var app = (function () {
     	};
     }
 
-    // (52:4) {#if editMode === 'add'}
+    // (60:4) {#if editMode === 'edit'}
     function create_if_block_1$1(ctx) {
     	var current;
 
-    	var editmeetup = new EditMeetup({ $$inline: true });
-    	editmeetup.$on("save", ctx.addMeetup);
+    	var editmeetup = new EditMeetup({
+    		props: { id: ctx.editedId },
+    		$$inline: true
+    	});
+    	editmeetup.$on("save", ctx.savedMeetup);
     	editmeetup.$on("cancel", ctx.cancelEdit);
 
     	return {
@@ -3202,7 +3374,11 @@ var app = (function () {
     			current = true;
     		},
 
-    		p: noop,
+    		p: function update(changed, ctx) {
+    			var editmeetup_changes = {};
+    			if (changed.editedId) editmeetup_changes.id = ctx.editedId;
+    			editmeetup.$set(editmeetup_changes);
+    		},
 
     		i: function intro(local) {
     			if (current) return;
@@ -3233,7 +3409,7 @@ var app = (function () {
     	var header = new Header({ $$inline: true });
 
     	var if_block_creators = [
-    		create_if_block$3,
+    		create_if_block$4,
     		create_else_block$2
     	];
 
@@ -3254,8 +3430,7 @@ var app = (function () {
     			main = element("main");
     			if_block.c();
     			main.className = "svelte-1w77hyv";
-    			add_location(main, file$9, 46, 0, 847);
-
+    			add_location(main, file$9, 54, 0, 994);
     		},
 
     		l: function claim(nodes) {
@@ -3346,13 +3521,16 @@ var app = (function () {
       let page = "overview";
 
       let pageData = {};
+      let editedId;
 
-      function addMeetup(event) {
+      function savedMeetup(event) {
         $$invalidate('editMode', editMode = null);
+        $$invalidate('editedId', editedId = null);
       }
 
       function cancelEdit() {
         $$invalidate('editMode', editMode = null);
+        $$invalidate('editedId', editedId = null);
       }
 
       function showDetails(event) {
@@ -3369,8 +3547,13 @@ var app = (function () {
 
       }
 
+      function startEdit(event) {
+        $$invalidate('editMode', editMode = 'edit');
+        $$invalidate('editedId', editedId = event.detail);
+      }
+
     	function click_handler() {
-    		const $$result = (editMode = 'add');
+    		const $$result = (editMode = 'edit');
     		$$invalidate('editMode', editMode);
     		return $$result;
     	}
@@ -3379,10 +3562,12 @@ var app = (function () {
     		editMode,
     		page,
     		pageData,
-    		addMeetup,
+    		editedId,
+    		savedMeetup,
     		cancelEdit,
     		showDetails,
     		closeDetails,
+    		startEdit,
     		$meetups,
     		click_handler
     	};
