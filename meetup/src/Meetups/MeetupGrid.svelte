@@ -1,5 +1,6 @@
 <script>
   import MeetupItem from "./MeetupItem.svelte";
+  import MeetupFilter from "./MeetupFilter.svelte";
 
   export let meetups;
   console.log(meetups)
@@ -19,6 +20,11 @@
     }
   }
 </style>
+
+<section id='what'>
+  <MeetupFilter/>
+</section>
+
 
 <section id="meetups">
   {#each meetups as meetup}
