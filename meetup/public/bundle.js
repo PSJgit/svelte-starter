@@ -35,11 +35,12 @@ var app = (function () {
             throw new Error(`'${name}' is not a store with a 'subscribe' method`);
         }
     }
-    function subscribe(component, store, callback) {
+    function subscribe(store, callback) {
         const unsub = store.subscribe(callback);
-        component.$$.on_destroy.push(unsub.unsubscribe
-            ? () => unsub.unsubscribe()
-            : unsub);
+        return unsub.unsubscribe ? () => unsub.unsubscribe() : unsub;
+    }
+    function component_subscribe(component, store, callback) {
+        component.$$.on_destroy.push(subscribe(store, callback));
     }
     function create_slot(definition, ctx, fn) {
         if (definition) {
@@ -149,19 +150,16 @@ var app = (function () {
     }
 
     const dirty_components = [];
-    const resolved_promise = Promise.resolve();
-    let update_scheduled = false;
     const binding_callbacks = [];
     const render_callbacks = [];
     const flush_callbacks = [];
+    const resolved_promise = Promise.resolve();
+    let update_scheduled = false;
     function schedule_update() {
         if (!update_scheduled) {
             update_scheduled = true;
             resolved_promise.then(flush);
         }
-    }
-    function add_binding_callback(fn) {
-        binding_callbacks.push(fn);
     }
     function add_render_callback(fn) {
         render_callbacks.push(fn);
@@ -180,18 +178,19 @@ var app = (function () {
                 update(component.$$);
             }
             while (binding_callbacks.length)
-                binding_callbacks.shift()();
+                binding_callbacks.pop()();
             // then, once components are updated, call
             // afterUpdate functions. This may cause
             // subsequent updates...
-            while (render_callbacks.length) {
-                const callback = render_callbacks.pop();
+            for (let i = 0; i < render_callbacks.length; i += 1) {
+                const callback = render_callbacks[i];
                 if (!seen_callbacks.has(callback)) {
                     callback();
                     // ...so guard against infinite loops
                     seen_callbacks.add(callback);
                 }
             }
+            render_callbacks.length = 0;
         } while (dirty_components.length);
         while (flush_callbacks.length) {
             flush_callbacks.pop()();
@@ -201,27 +200,51 @@ var app = (function () {
     function update($$) {
         if ($$.fragment) {
             $$.update($$.dirty);
-            run_all($$.before_render);
+            run_all($$.before_update);
             $$.fragment.p($$.dirty, $$.ctx);
             $$.dirty = null;
-            $$.after_render.forEach(add_render_callback);
+            $$.after_update.forEach(add_render_callback);
         }
     }
+    const outroing = new Set();
     let outros;
     function group_outros() {
         outros = {
-            remaining: 0,
-            callbacks: []
+            r: 0,
+            c: [],
+            p: outros // parent group
         };
     }
     function check_outros() {
-        if (!outros.remaining) {
-            run_all(outros.callbacks);
+        if (!outros.r) {
+            run_all(outros.c);
+        }
+        outros = outros.p;
+    }
+    function transition_in(block, local) {
+        if (block && block.i) {
+            outroing.delete(block);
+            block.i(local);
         }
     }
-    function on_outro(callback) {
-        outros.callbacks.push(callback);
+    function transition_out(block, local, detach, callback) {
+        if (block && block.o) {
+            if (outroing.has(block))
+                return;
+            outroing.add(block);
+            outros.c.push(() => {
+                outroing.delete(block);
+                if (callback) {
+                    if (detach)
+                        block.d(1);
+                    callback();
+                }
+            });
+            block.o(local);
+        }
     }
+
+    const globals = (typeof window !== 'undefined' ? window : global);
 
     function bind(component, name, callback) {
         if (component.$$.props.indexOf(name) === -1)
@@ -230,11 +253,9 @@ var app = (function () {
         callback(component.$$.ctx[name]);
     }
     function mount_component(component, target, anchor) {
-        const { fragment, on_mount, on_destroy, after_render } = component.$$;
+        const { fragment, on_mount, on_destroy, after_update } = component.$$;
         fragment.m(target, anchor);
-        // onMount happens after the initial afterUpdate. Because
-        // afterUpdate callbacks happen in reverse order (inner first)
-        // we schedule onMount callbacks before afterUpdate callbacks
+        // onMount happens before the initial afterUpdate
         add_render_callback(() => {
             const new_on_destroy = on_mount.map(run).filter(is_function);
             if (on_destroy) {
@@ -247,10 +268,10 @@ var app = (function () {
             }
             component.$$.on_mount = [];
         });
-        after_render.forEach(add_render_callback);
+        after_update.forEach(add_render_callback);
     }
-    function destroy(component, detaching) {
-        if (component.$$) {
+    function destroy_component(component, detaching) {
+        if (component.$$.fragment) {
             run_all(component.$$.on_destroy);
             component.$$.fragment.d(detaching);
             // TODO null out other refs, including component.$$ (but need to
@@ -267,7 +288,7 @@ var app = (function () {
         }
         component.$$.dirty[key] = true;
     }
-    function init(component, options, instance, create_fragment, not_equal$$1, prop_names) {
+    function init(component, options, instance, create_fragment, not_equal, prop_names) {
         const parent_component = current_component;
         set_current_component(component);
         const props = options.props || {};
@@ -277,13 +298,13 @@ var app = (function () {
             // state
             props: prop_names,
             update: noop,
-            not_equal: not_equal$$1,
+            not_equal,
             bound: blank_object(),
             // lifecycle
             on_mount: [],
             on_destroy: [],
-            before_render: [],
-            after_render: [],
+            before_update: [],
+            after_update: [],
             context: new Map(parent_component ? parent_component.$$.context : []),
             // everything else
             callbacks: blank_object(),
@@ -292,7 +313,7 @@ var app = (function () {
         let ready = false;
         $$.ctx = instance
             ? instance(component, props, (key, value) => {
-                if ($$.ctx && not_equal$$1($$.ctx[key], $$.ctx[key] = value)) {
+                if ($$.ctx && not_equal($$.ctx[key], $$.ctx[key] = value)) {
                     if ($$.bound[key])
                         $$.bound[key](value);
                     if (ready)
@@ -302,7 +323,7 @@ var app = (function () {
             : props;
         $$.update();
         ready = true;
-        run_all($$.before_render);
+        run_all($$.before_update);
         $$.fragment = create_fragment($$.ctx);
         if (options.target) {
             if (options.hydrate) {
@@ -313,8 +334,8 @@ var app = (function () {
                 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 $$.fragment.c();
             }
-            if (options.intro && component.$$.fragment.i)
-                component.$$.fragment.i();
+            if (options.intro)
+                transition_in(component.$$.fragment);
             mount_component(component, options.target, options.anchor);
             flush();
         }
@@ -322,7 +343,7 @@ var app = (function () {
     }
     class SvelteComponent {
         $destroy() {
-            destroy(this, true);
+            destroy_component(this, 1);
             this.$destroy = noop;
         }
         $on(type, callback) {
@@ -353,6 +374,7 @@ var app = (function () {
         }
     }
 
+    const subscriber_queue = [];
     /**
      * Create a `Writable` store that allows both updating and reading by subscription.
      * @param {*=}value initial value
@@ -364,11 +386,20 @@ var app = (function () {
         function set(new_value) {
             if (safe_not_equal(value, new_value)) {
                 value = new_value;
-                if (!stop) {
-                    return; // not ready
+                if (stop) { // store is ready
+                    const run_queue = !subscriber_queue.length;
+                    for (let i = 0; i < subscribers.length; i += 1) {
+                        const s = subscribers[i];
+                        s[1]();
+                        subscriber_queue.push(s, value);
+                    }
+                    if (run_queue) {
+                        for (let i = 0; i < subscriber_queue.length; i += 2) {
+                            subscriber_queue[i][0](subscriber_queue[i + 1]);
+                        }
+                        subscriber_queue.length = 0;
+                    }
                 }
-                subscribers.forEach((s) => s[1]());
-                subscribers.forEach((s) => s[0](value));
             }
         }
         function update(fn) {
@@ -388,6 +419,7 @@ var app = (function () {
                 }
                 if (subscribers.length === 0) {
                     stop();
+                    stop = null;
                 }
             };
         }
@@ -459,7 +491,7 @@ var app = (function () {
       }
     };
 
-    /* src\UI\Header.svelte generated by Svelte v3.5.1 */
+    /* src\UI\Header.svelte generated by Svelte v3.6.11 */
 
     const file = "src\\UI\\Header.svelte";
 
@@ -471,10 +503,10 @@ var app = (function () {
     			header = element("header");
     			h1 = element("h1");
     			h1.textContent = "MeetUs";
-    			h1.className = "svelte-3mmc7n";
-    			add_location(h1, file, 22, 2, 354);
-    			header.className = "svelte-3mmc7n";
-    			add_location(header, file, 21, 0, 343);
+    			attr(h1, "class", "svelte-rammu");
+    			add_location(h1, file, 22, 2, 376);
+    			attr(header, "class", "svelte-rammu");
+    			add_location(header, file, 21, 0, 364);
     		},
 
     		l: function claim(nodes) {
@@ -505,7 +537,7 @@ var app = (function () {
     	}
     }
 
-    /* src\UI\Button.svelte generated by Svelte v3.5.1 */
+    /* src\UI\Button.svelte generated by Svelte v3.6.11 */
 
     const file$1 = "src\\UI\\Button.svelte";
 
@@ -522,10 +554,10 @@ var app = (function () {
 
     			if (default_slot) default_slot.c();
 
-    			button.className = button_class_value = "" + ctx.mode + " " + ctx.color + " svelte-g32zaw";
-    			button.type = ctx.type;
+    			attr(button, "class", button_class_value = "" + ctx.mode + " " + ctx.color + " svelte-1x54bss");
+    			attr(button, "type", ctx.type);
     			button.disabled = ctx.disabled;
-    			add_location(button, file$1, 91, 2, 1517);
+    			add_location(button, file$1, 91, 2, 1608);
     			dispose = listen(button, "click", ctx.click_handler);
     		},
 
@@ -548,12 +580,12 @@ var app = (function () {
     				default_slot.p(get_slot_changes(default_slot_1, ctx, changed, null), get_slot_context(default_slot_1, ctx, null));
     			}
 
-    			if ((!current || changed.mode || changed.color) && button_class_value !== (button_class_value = "" + ctx.mode + " " + ctx.color + " svelte-g32zaw")) {
-    				button.className = button_class_value;
+    			if ((!current || changed.mode || changed.color) && button_class_value !== (button_class_value = "" + ctx.mode + " " + ctx.color + " svelte-1x54bss")) {
+    				attr(button, "class", button_class_value);
     			}
 
     			if (!current || changed.type) {
-    				button.type = ctx.type;
+    				attr(button, "type", ctx.type);
     			}
 
     			if (!current || changed.disabled) {
@@ -563,12 +595,12 @@ var app = (function () {
 
     		i: function intro(local) {
     			if (current) return;
-    			if (default_slot && default_slot.i) default_slot.i(local);
+    			transition_in(default_slot, local);
     			current = true;
     		},
 
     		o: function outro(local) {
-    			if (default_slot && default_slot.o) default_slot.o(local);
+    			transition_out(default_slot, local);
     			current = false;
     		},
 
@@ -596,9 +628,9 @@ var app = (function () {
 
     			if (default_slot) default_slot.c();
 
-    			a.href = ctx.href;
-    			a.className = "svelte-g32zaw";
-    			add_location(a, file$1, 87, 2, 1476);
+    			attr(a, "href", ctx.href);
+    			attr(a, "class", "svelte-1x54bss");
+    			add_location(a, file$1, 87, 2, 1563);
     		},
 
     		l: function claim(nodes) {
@@ -621,18 +653,18 @@ var app = (function () {
     			}
 
     			if (!current || changed.href) {
-    				a.href = ctx.href;
+    				attr(a, "href", ctx.href);
     			}
     		},
 
     		i: function intro(local) {
     			if (current) return;
-    			if (default_slot && default_slot.i) default_slot.i(local);
+    			transition_in(default_slot, local);
     			current = true;
     		},
 
     		o: function outro(local) {
-    			if (default_slot && default_slot.o) default_slot.o(local);
+    			transition_out(default_slot, local);
     			current = false;
     		},
 
@@ -687,11 +719,9 @@ var app = (function () {
     				if_blocks[current_block_type_index].p(changed, ctx);
     			} else {
     				group_outros();
-    				on_outro(() => {
-    					if_blocks[previous_block_index].d(1);
+    				transition_out(if_blocks[previous_block_index], 1, 1, () => {
     					if_blocks[previous_block_index] = null;
     				});
-    				if_block.o(1);
     				check_outros();
 
     				if_block = if_blocks[current_block_type_index];
@@ -699,19 +729,19 @@ var app = (function () {
     					if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
     					if_block.c();
     				}
-    				if_block.i(1);
+    				transition_in(if_block, 1);
     				if_block.m(if_block_anchor.parentNode, if_block_anchor);
     			}
     		},
 
     		i: function intro(local) {
     			if (current) return;
-    			if (if_block) if_block.i();
+    			transition_in(if_block);
     			current = true;
     		},
 
     		o: function outro(local) {
-    			if (if_block) if_block.o();
+    			transition_out(if_block);
     			current = false;
     		},
 
@@ -807,7 +837,7 @@ var app = (function () {
     	}
     }
 
-    /* src\UI\Badge.svelte generated by Svelte v3.5.1 */
+    /* src\UI\Badge.svelte generated by Svelte v3.6.11 */
 
     const file$2 = "src\\UI\\Badge.svelte";
 
@@ -823,8 +853,8 @@ var app = (function () {
 
     			if (default_slot) default_slot.c();
 
-    			span.className = "svelte-18dcboe";
-    			add_location(span, file$2, 14, 0, 262);
+    			attr(span, "class", "svelte-19tf53k");
+    			add_location(span, file$2, 14, 0, 276);
     		},
 
     		l: function claim(nodes) {
@@ -850,12 +880,12 @@ var app = (function () {
 
     		i: function intro(local) {
     			if (current) return;
-    			if (default_slot && default_slot.i) default_slot.i(local);
+    			transition_in(default_slot, local);
     			current = true;
     		},
 
     		o: function outro(local) {
-    			if (default_slot && default_slot.o) default_slot.o(local);
+    			transition_out(default_slot, local);
     			current = false;
     		},
 
@@ -886,11 +916,12 @@ var app = (function () {
     	}
     }
 
-    /* src\Meetups\MeetupItem.svelte generated by Svelte v3.5.1 */
+    /* src\Meetups\MeetupItem.svelte generated by Svelte v3.6.11 */
 
     const file$3 = "src\\Meetups\\MeetupItem.svelte";
 
     // (85:6) {#if isFav}
+
     function create_if_block$1(ctx) {
     	var current;
 
@@ -914,23 +945,24 @@ var app = (function () {
 
     		i: function intro(local) {
     			if (current) return;
-    			badge.$$.fragment.i(local);
+    			transition_in(badge.$$.fragment, local);
 
     			current = true;
     		},
 
     		o: function outro(local) {
-    			badge.$$.fragment.o(local);
+    			transition_out(badge.$$.fragment, local);
     			current = false;
     		},
 
     		d: function destroy(detaching) {
-    			badge.$destroy(detaching);
+    			destroy_component(badge, detaching);
     		}
     	};
     }
 
     // (86:8) <Badge>
+
     function create_default_slot_3(ctx) {
     	var t;
 
@@ -973,6 +1005,7 @@ var app = (function () {
     }
 
     // (100:4) <Button       mode="outline"       color={isFav ? null : 'success'}       type="button"       on:click={toggleFavorite}>
+
     function create_default_slot_1(ctx) {
     	var t_value = ctx.isFav ? 'Unfavorite' : 'Favorite', t;
 
@@ -999,7 +1032,9 @@ var app = (function () {
     	};
     }
 
+
     // (107:4) <Button type="button" on:click={() => dispatch('showdetails', id)}>
+
     function create_default_slot(ctx) {
     	var t;
 
@@ -1108,6 +1143,7 @@ var app = (function () {
     			add_location(footer, file$3, 97, 2, 1533);
     			article.className = "svelte-enhpap";
     			add_location(article, file$3, 80, 0, 1230);
+
     		},
 
     		l: function claim(nodes) {
@@ -1153,19 +1189,16 @@ var app = (function () {
     				if (!if_block) {
     					if_block = create_if_block$1(ctx);
     					if_block.c();
-    					if_block.i(1);
+    					transition_in(if_block, 1);
     					if_block.m(h1, null);
     				} else {
-    									if_block.i(1);
+    									transition_in(if_block, 1);
     				}
     			} else if (if_block) {
     				group_outros();
-    				on_outro(() => {
-    					if_block.d(1);
+    				transition_out(if_block, 1, 1, () => {
     					if_block = null;
     				});
-
-    				if_block.o(1);
     				check_outros();
     			}
 
@@ -1178,11 +1211,11 @@ var app = (function () {
     			}
 
     			if (!current || changed.imageUrl) {
-    				img.src = ctx.imageUrl;
+    				attr(img, "src", ctx.imageUrl);
     			}
 
     			if (!current || changed.title) {
-    				img.alt = ctx.title;
+    				attr(img, "alt", ctx.title);
     			}
 
     			if (!current || changed.description) {
@@ -1205,22 +1238,22 @@ var app = (function () {
 
     		i: function intro(local) {
     			if (current) return;
-    			if (if_block) if_block.i();
+    			transition_in(if_block);
 
-    			button0.$$.fragment.i(local);
+    			transition_in(button0.$$.fragment, local);
 
-    			button1.$$.fragment.i(local);
+    			transition_in(button1.$$.fragment, local);
 
-    			button2.$$.fragment.i(local);
+    			transition_in(button2.$$.fragment, local);
 
     			current = true;
     		},
 
     		o: function outro(local) {
-    			if (if_block) if_block.o();
-    			button0.$$.fragment.o(local);
-    			button1.$$.fragment.o(local);
-    			button2.$$.fragment.o(local);
+    			transition_out(if_block);
+    			transition_out(button0.$$.fragment, local);
+    			transition_out(button1.$$.fragment, local);
+    			transition_out(button2.$$.fragment, local);
     			current = false;
     		},
 
@@ -1231,11 +1264,11 @@ var app = (function () {
 
     			if (if_block) if_block.d();
 
-    			button0.$destroy();
+    			destroy_component(button0);
 
-    			button1.$destroy();
+    			destroy_component(button1);
 
-    			button2.$destroy();
+    			destroy_component(button2);
     		}
     	};
     }
@@ -1256,6 +1289,7 @@ var app = (function () {
     		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<MeetupItem> was created with unknown prop '${key}'`);
     	});
 
+
     	function click_handler() {
     		return dispatch('edit', id);
     	}
@@ -1263,6 +1297,7 @@ var app = (function () {
     	function click_handler_1() {
     		return dispatch('showdetails', id);
     	}
+
 
     	$$self.$set = $$props => {
     		if ('id' in $$props) $$invalidate('id', id = $$props.id);
@@ -1389,7 +1424,8 @@ var app = (function () {
     	}
     }
 
-    /* src\Meetups\MeetupGrid.svelte generated by Svelte v3.5.1 */
+    /* src\Meetups\MeetupGrid.svelte generated by Svelte v3.6.11 */
+    const { console: console_1 } = globals;
 
     const file$4 = "src\\Meetups\\MeetupGrid.svelte";
 
@@ -1399,7 +1435,7 @@ var app = (function () {
     	return child_ctx;
     }
 
-    // (23:2) {#each meetups as meetup}
+    // (24:2) {#each meetups as meetup}
     function create_each_block(ctx) {
     	var current;
 
@@ -1444,18 +1480,18 @@ var app = (function () {
 
     		i: function intro(local) {
     			if (current) return;
-    			meetupitem.$$.fragment.i(local);
+    			transition_in(meetupitem.$$.fragment, local);
 
     			current = true;
     		},
 
     		o: function outro(local) {
-    			meetupitem.$$.fragment.o(local);
+    			transition_out(meetupitem.$$.fragment, local);
     			current = false;
     		},
 
     		d: function destroy(detaching) {
-    			meetupitem.$destroy(detaching);
+    			destroy_component(meetupitem, detaching);
     		}
     	};
     }
@@ -1471,18 +1507,9 @@ var app = (function () {
     		each_blocks[i] = create_each_block(get_each_context(ctx, each_value, i));
     	}
 
-    	function outro_block(i, detaching, local) {
-    		if (each_blocks[i]) {
-    			if (detaching) {
-    				on_outro(() => {
-    					each_blocks[i].d(detaching);
-    					each_blocks[i] = null;
-    				});
-    			}
-
-    			each_blocks[i].o(local);
-    		}
-    	}
+    	const out = i => transition_out(each_blocks[i], 1, 1, () => {
+    		each_blocks[i] = null;
+    	});
 
     	return {
     		c: function create() {
@@ -1491,9 +1518,9 @@ var app = (function () {
     			for (var i = 0; i < each_blocks.length; i += 1) {
     				each_blocks[i].c();
     			}
-    			section.id = "meetups";
-    			section.className = "svelte-181fmcx";
-    			add_location(section, file$4, 21, 0, 313);
+    			attr(section, "id", "meetups");
+    			attr(section, "class", "svelte-1ns8a2s");
+    			add_location(section, file$4, 22, 0, 358);
     		},
 
     		l: function claim(nodes) {
@@ -1519,31 +1546,31 @@ var app = (function () {
 
     					if (each_blocks[i]) {
     						each_blocks[i].p(changed, child_ctx);
-    						each_blocks[i].i(1);
+    						transition_in(each_blocks[i], 1);
     					} else {
     						each_blocks[i] = create_each_block(child_ctx);
     						each_blocks[i].c();
-    						each_blocks[i].i(1);
+    						transition_in(each_blocks[i], 1);
     						each_blocks[i].m(section, null);
     					}
     				}
 
     				group_outros();
-    				for (; i < each_blocks.length; i += 1) outro_block(i, 1, 1);
+    				for (i = each_value.length; i < each_blocks.length; i += 1) out(i);
     				check_outros();
     			}
     		},
 
     		i: function intro(local) {
     			if (current) return;
-    			for (var i = 0; i < each_value.length; i += 1) each_blocks[i].i();
+    			for (var i = 0; i < each_value.length; i += 1) transition_in(each_blocks[i]);
 
     			current = true;
     		},
 
     		o: function outro(local) {
     			each_blocks = each_blocks.filter(Boolean);
-    			for (let i = 0; i < each_blocks.length; i += 1) outro_block(i, 0, 0);
+    			for (let i = 0; i < each_blocks.length; i += 1) transition_out(each_blocks[i]);
 
     			current = false;
     		},
@@ -1560,10 +1587,11 @@ var app = (function () {
 
     function instance$3($$self, $$props, $$invalidate) {
     	let { meetups } = $$props;
+      console.log(meetups);
 
     	const writable_props = ['meetups'];
     	Object.keys($$props).forEach(key => {
-    		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<MeetupGrid> was created with unknown prop '${key}'`);
+    		if (!writable_props.includes(key) && !key.startsWith('$$')) console_1.warn(`<MeetupGrid> was created with unknown prop '${key}'`);
     	});
 
     	function showdetails_handler(event) {
@@ -1593,7 +1621,7 @@ var app = (function () {
     		const { ctx } = this.$$;
     		const props = options.props || {};
     		if (ctx.meetups === undefined && !('meetups' in props)) {
-    			console.warn("<MeetupGrid> was created without expected prop 'meetups'");
+    			console_1.warn("<MeetupGrid> was created without expected prop 'meetups'");
     		}
     	}
 
@@ -1606,7 +1634,7 @@ var app = (function () {
     	}
     }
 
-    /* src\UI\TextInput.svelte generated by Svelte v3.5.1 */
+    /* src\UI\TextInput.svelte generated by Svelte v3.6.11 */
 
     const file$5 = "src\\UI\\TextInput.svelte";
 
@@ -1618,11 +1646,11 @@ var app = (function () {
     		c: function create() {
     			input = element("input");
     			attr(input, "type", ctx.type);
-    			input.id = ctx.id;
+    			attr(input, "id", ctx.id);
     			input.value = ctx.value;
-    			input.className = "svelte-1mrfx4j";
+    			attr(input, "class", "svelte-jrobkm");
     			toggle_class(input, "invalid", !ctx.valid && ctx.touched);
-    			add_location(input, file$5, 61, 4, 1128);
+    			add_location(input, file$5, 61, 4, 1189);
 
     			dispose = [
     				listen(input, "input", ctx.input_handler),
@@ -1640,7 +1668,7 @@ var app = (function () {
     			}
 
     			if (changed.id) {
-    				input.id = ctx.id;
+    				attr(input, "id", ctx.id);
     			}
 
     			if (changed.value) {
@@ -1669,11 +1697,11 @@ var app = (function () {
     	return {
     		c: function create() {
     			textarea = element("textarea");
-    			textarea.rows = ctx.rows;
-    			textarea.id = ctx.id;
-    			textarea.className = "svelte-1mrfx4j";
+    			attr(textarea, "rows", ctx.rows);
+    			attr(textarea, "id", ctx.id);
+    			attr(textarea, "class", "svelte-jrobkm");
     			toggle_class(textarea, "invalid", !ctx.valid && ctx.touched);
-    			add_location(textarea, file$5, 59, 4, 1011);
+    			add_location(textarea, file$5, 59, 4, 1070);
 
     			dispose = [
     				listen(textarea, "input", ctx.textarea_input_handler),
@@ -1691,11 +1719,11 @@ var app = (function () {
     			if (changed.value) textarea.value = ctx.value;
 
     			if (changed.rows) {
-    				textarea.rows = ctx.rows;
+    				attr(textarea, "rows", ctx.rows);
     			}
 
     			if (changed.id) {
-    				textarea.id = ctx.id;
+    				attr(textarea, "id", ctx.id);
     			}
 
     			if ((changed.valid || changed.touched)) {
@@ -1721,8 +1749,8 @@ var app = (function () {
     		c: function create() {
     			p = element("p");
     			t = text(ctx.validityMessage);
-    			p.className = "error-message svelte-1mrfx4j";
-    			add_location(p, file$5, 64, 4, 1291);
+    			attr(p, "class", "error-message svelte-jrobkm");
+    			add_location(p, file$5, 64, 4, 1355);
     		},
 
     		m: function mount(target, anchor) {
@@ -1766,11 +1794,11 @@ var app = (function () {
     			if_block0.c();
     			t2 = space();
     			if (if_block1) if_block1.c();
-    			label_1.htmlFor = ctx.id;
-    			label_1.className = "svelte-1mrfx4j";
-    			add_location(label_1, file$5, 57, 2, 940);
-    			div.className = "form-control svelte-1mrfx4j";
-    			add_location(div, file$5, 56, 0, 911);
+    			attr(label_1, "for", ctx.id);
+    			attr(label_1, "class", "svelte-jrobkm");
+    			add_location(label_1, file$5, 57, 2, 997);
+    			attr(div, "class", "form-control svelte-jrobkm");
+    			add_location(div, file$5, 56, 0, 967);
     		},
 
     		l: function claim(nodes) {
@@ -1793,7 +1821,7 @@ var app = (function () {
     			}
 
     			if (changed.id) {
-    				label_1.htmlFor = ctx.id;
+    				attr(label_1, "for", ctx.id);
     			}
 
     			if (current_block_type === (current_block_type = select_block_type(ctx)) && if_block0) {
@@ -1977,12 +2005,12 @@ var app = (function () {
     	}
     }
 
-    /* src\UI\Modal.svelte generated by Svelte v3.5.1 */
+    /* src\UI\Modal.svelte generated by Svelte v3.6.11 */
 
     const file$6 = "src\\UI\\Modal.svelte";
 
-    const get_footer_slot_changes = ({}) => ({});
-    const get_footer_slot_context = ({}) => ({});
+    const get_footer_slot_changes = () => ({});
+    const get_footer_slot_context = () => ({});
 
     // (69:6) <Button on:click={closeModal}>
     function create_default_slot$1(ctx) {
@@ -2042,18 +2070,18 @@ var app = (function () {
     			}
 
     			if (footer_slot) footer_slot.c();
-    			div0.className = "modal-backdrop svelte-1wfedfe";
-    			add_location(div0, file$6, 60, 0, 950);
-    			h1.className = "svelte-1wfedfe";
-    			add_location(h1, file$6, 62, 2, 1025);
+    			attr(div0, "class", "modal-backdrop svelte-iks6mv");
+    			add_location(div0, file$6, 60, 0, 1010);
+    			attr(h1, "class", "svelte-iks6mv");
+    			add_location(h1, file$6, 62, 2, 1087);
 
-    			div1.className = "content svelte-1wfedfe";
-    			add_location(div1, file$6, 63, 2, 1044);
+    			attr(div1, "class", "content svelte-iks6mv");
+    			add_location(div1, file$6, 63, 2, 1107);
 
-    			footer.className = "svelte-1wfedfe";
-    			add_location(footer, file$6, 66, 2, 1090);
-    			div2.className = "modal svelte-1wfedfe";
-    			add_location(div2, file$6, 61, 0, 1003);
+    			attr(footer, "class", "svelte-iks6mv");
+    			add_location(footer, file$6, 66, 2, 1156);
+    			attr(div2, "class", "modal svelte-iks6mv");
+    			add_location(div2, file$6, 61, 0, 1064);
     			dispose = listen(div0, "click", ctx.closeModal);
     		},
 
@@ -2113,18 +2141,18 @@ var app = (function () {
 
     		i: function intro(local) {
     			if (current) return;
-    			if (default_slot && default_slot.i) default_slot.i(local);
+    			transition_in(default_slot, local);
 
-    			button.$$.fragment.i(local);
+    			transition_in(button.$$.fragment, local);
 
-    			if (footer_slot && footer_slot.i) footer_slot.i(local);
+    			transition_in(footer_slot, local);
     			current = true;
     		},
 
     		o: function outro(local) {
-    			if (default_slot && default_slot.o) default_slot.o(local);
-    			button.$$.fragment.o(local);
-    			if (footer_slot && footer_slot.o) footer_slot.o(local);
+    			transition_out(default_slot, local);
+    			transition_out(button.$$.fragment, local);
+    			transition_out(footer_slot, local);
     			current = false;
     		},
 
@@ -2138,7 +2166,7 @@ var app = (function () {
     			if (default_slot) default_slot.d(detaching);
 
     			if (!footer_slot) {
-    				button.$destroy();
+    				destroy_component(button);
     			}
 
     			if (footer_slot) footer_slot.d(detaching);
@@ -2204,7 +2232,7 @@ var app = (function () {
       ).test(val);
     }
 
-    /* src\Meetups\EditMeetup.svelte generated by Svelte v3.5.1 */
+    /* src\Meetups\EditMeetup.svelte generated by Svelte v3.6.11 */
 
     const file$7 = "src\\Meetups\\EditMeetup.svelte";
 
@@ -2403,9 +2431,9 @@ var app = (function () {
 
     		i: function intro(local) {
     			if (current) return;
-    			button0.$$.fragment.i(local);
+    			transition_in(button0.$$.fragment, local);
 
-    			button1.$$.fragment.i(local);
+    			transition_in(button1.$$.fragment, local);
 
     			if (if_block) if_block.i();
     			current = true;
@@ -2423,7 +2451,7 @@ var app = (function () {
     				detach(div);
     			}
 
-    			button0.$destroy();
+    			destroy_component(button0);
 
     			button1.$destroy();
 
@@ -2515,7 +2543,7 @@ var app = (function () {
     	}
     	var textinput5 = new TextInput({ props: textinput5_props, $$inline: true });
 
-    	add_binding_callback(() => bind(textinput5, 'value', textinput5_value_binding));
+    	binding_callbacks.push(() => bind(textinput5, 'value', textinput5_value_binding));
 
     	return {
     		c: function create() {
@@ -2532,9 +2560,11 @@ var app = (function () {
     			t4 = space();
     			textinput5.$$.fragment.c();
     			t5 = space();
+
     			form.className = "svelte-no1xoc";
     			add_location(form, file$7, 84, 2, 1970);
     			dispose = listen(form, "submit", ctx.submitForm);
+
     		},
 
     		m: function mount(target, anchor) {
@@ -2590,28 +2620,28 @@ var app = (function () {
 
     		i: function intro(local) {
     			if (current) return;
-    			textinput0.$$.fragment.i(local);
+    			transition_in(textinput0.$$.fragment, local);
 
-    			textinput1.$$.fragment.i(local);
+    			transition_in(textinput1.$$.fragment, local);
 
-    			textinput2.$$.fragment.i(local);
+    			transition_in(textinput2.$$.fragment, local);
 
-    			textinput3.$$.fragment.i(local);
+    			transition_in(textinput3.$$.fragment, local);
 
-    			textinput4.$$.fragment.i(local);
+    			transition_in(textinput4.$$.fragment, local);
 
-    			textinput5.$$.fragment.i(local);
+    			transition_in(textinput5.$$.fragment, local);
 
     			current = true;
     		},
 
     		o: function outro(local) {
-    			textinput0.$$.fragment.o(local);
-    			textinput1.$$.fragment.o(local);
-    			textinput2.$$.fragment.o(local);
-    			textinput3.$$.fragment.o(local);
-    			textinput4.$$.fragment.o(local);
-    			textinput5.$$.fragment.o(local);
+    			transition_out(textinput0.$$.fragment, local);
+    			transition_out(textinput1.$$.fragment, local);
+    			transition_out(textinput2.$$.fragment, local);
+    			transition_out(textinput3.$$.fragment, local);
+    			transition_out(textinput4.$$.fragment, local);
+    			transition_out(textinput5.$$.fragment, local);
     			current = false;
     		},
 
@@ -2620,17 +2650,17 @@ var app = (function () {
     				detach(form);
     			}
 
-    			textinput0.$destroy();
+    			destroy_component(textinput0);
 
-    			textinput1.$destroy();
+    			destroy_component(textinput1);
 
-    			textinput2.$destroy();
+    			destroy_component(textinput2);
 
-    			textinput3.$destroy();
+    			destroy_component(textinput3);
 
-    			textinput4.$destroy();
+    			destroy_component(textinput4);
 
-    			textinput5.$destroy();
+    			destroy_component(textinput5);
 
     			if (detaching) {
     				detach(t5);
@@ -2679,18 +2709,18 @@ var app = (function () {
 
     		i: function intro(local) {
     			if (current) return;
-    			modal.$$.fragment.i(local);
+    			transition_in(modal.$$.fragment, local);
 
     			current = true;
     		},
 
     		o: function outro(local) {
-    			modal.$$.fragment.o(local);
+    			transition_out(modal.$$.fragment, local);
     			current = false;
     		},
 
     		d: function destroy(detaching) {
-    			modal.$destroy(detaching);
+    			destroy_component(modal, detaching);
     		}
     	};
     }
@@ -2861,6 +2891,7 @@ var app = (function () {
     	}
     }
 
+
     /* src\Meetups\MeetupDetail.svelte generated by Svelte v3.5.1 */
 
     const file$8 = "src\\Meetups\\MeetupDetail.svelte";
@@ -2887,6 +2918,7 @@ var app = (function () {
     }
 
     // (72:4) <Button type="button" mode="outline" on:click={() => dispatch('close')}>
+
     function create_default_slot$3(ctx) {
     	var t;
 
@@ -2951,6 +2983,7 @@ var app = (function () {
     			button0.$$.fragment.c();
     			t9 = space();
     			button1.$$.fragment.c();
+
     			img.src = img_src_value = ctx.selectedMeetup.imageUrl;
     			img.alt = img_alt_value = ctx.selectedMeetup.title;
     			img.className = "svelte-10utsu1";
@@ -2967,6 +3000,7 @@ var app = (function () {
     			add_location(div1, file$8, 66, 2, 1007);
     			section.className = "svelte-10utsu1";
     			add_location(section, file$8, 62, 0, 895);
+
     		},
 
     		l: function claim(nodes) {
@@ -3003,6 +3037,7 @@ var app = (function () {
 
     			if ((!current || changed.selectedMeetup) && img_alt_value !== (img_alt_value = ctx.selectedMeetup.title)) {
     				img.alt = img_alt_value;
+
     			}
 
     			if ((!current || changed.selectedMeetup) && t1_value !== (t1_value = ctx.selectedMeetup.title)) {
@@ -3037,12 +3072,14 @@ var app = (function () {
 
     			button1.$$.fragment.i(local);
 
+
     			current = true;
     		},
 
     		o: function outro(local) {
     			button0.$$.fragment.o(local);
     			button1.$$.fragment.o(local);
+
     			current = false;
     		},
 
@@ -3051,15 +3088,18 @@ var app = (function () {
     				detach(section);
     			}
 
+
     			button0.$destroy();
 
     			button1.$destroy();
+
     		}
     	};
     }
 
     function instance$7($$self, $$props, $$invalidate) {
     	
+
 
       let { id } = $$props;
 
@@ -3074,6 +3114,7 @@ var app = (function () {
       onDestroy(() => {
         unsubscribe();
       });
+
 
     	const writable_props = ['id'];
     	Object.keys($$props).forEach(key => {
@@ -3151,16 +3192,21 @@ var app = (function () {
     			if (current) return;
     			meetupdetail.$$.fragment.i(local);
 
+
     			current = true;
     		},
 
     		o: function outro(local) {
+
     			meetupdetail.$$.fragment.o(local);
+
     			current = false;
     		},
 
     		d: function destroy(detaching) {
+
     			meetupdetail.$destroy(detaching);
+
     		}
     	};
     }
@@ -3195,6 +3241,7 @@ var app = (function () {
     			if (if_block) if_block.c();
     			t1 = space();
     			meetupgrid.$$.fragment.c();
+
     			div.className = "meetup-controls svelte-1w77hyv";
     			add_location(div, file$9, 56, 4, 1033);
     		},
@@ -3223,15 +3270,13 @@ var app = (function () {
     					if_block.c();
     					if_block.i(1);
     					if_block.m(t1.parentNode, t1);
+
     				}
     			} else if (if_block) {
     				group_outros();
-    				on_outro(() => {
-    					if_block.d(1);
+    				transition_out(if_block, 1, 1, () => {
     					if_block = null;
     				});
-
-    				if_block.o(1);
     				check_outros();
     			}
 
@@ -3242,19 +3287,23 @@ var app = (function () {
 
     		i: function intro(local) {
     			if (current) return;
+
     			button.$$.fragment.i(local);
 
-    			if (if_block) if_block.i();
 
-    			meetupgrid.$$.fragment.i(local);
+    			transition_in(if_block);
+
+    			transition_in(meetupgrid.$$.fragment, local);
 
     			current = true;
     		},
 
     		o: function outro(local) {
+
     			button.$$.fragment.o(local);
     			if (if_block) if_block.o();
     			meetupgrid.$$.fragment.o(local);
+
     			current = false;
     		},
 
@@ -3264,6 +3313,7 @@ var app = (function () {
     			}
 
     			button.$destroy();
+
 
     			if (detaching) {
     				detach(t0);
@@ -3275,7 +3325,9 @@ var app = (function () {
     				detach(t1);
     			}
 
+
     			meetupgrid.$destroy(detaching);
+
     		}
     	};
     }
@@ -3332,16 +3384,21 @@ var app = (function () {
     			if (current) return;
     			editmeetup.$$.fragment.i(local);
 
+
     			current = true;
     		},
 
     		o: function outro(local) {
+
     			editmeetup.$$.fragment.o(local);
+
     			current = false;
     		},
 
     		d: function destroy(detaching) {
+
     			editmeetup.$destroy(detaching);
+
     		}
     	};
     }
@@ -3395,11 +3452,13 @@ var app = (function () {
     				if_blocks[current_block_type_index].p(changed, ctx);
     			} else {
     				group_outros();
+
     				on_outro(() => {
     					if_blocks[previous_block_index].d(1);
     					if_blocks[previous_block_index] = null;
     				});
     				if_block.o(1);
+
     				check_outros();
 
     				if_block = if_blocks[current_block_type_index];
@@ -3407,27 +3466,35 @@ var app = (function () {
     					if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
     					if_block.c();
     				}
+
     				if_block.i(1);
+
     				if_block.m(main, null);
     			}
     		},
 
     		i: function intro(local) {
     			if (current) return;
+
     			header.$$.fragment.i(local);
 
     			if (if_block) if_block.i();
+
     			current = true;
     		},
 
     		o: function outro(local) {
+
     			header.$$.fragment.o(local);
     			if (if_block) if_block.o();
+
     			current = false;
     		},
 
     		d: function destroy(detaching) {
+
     			header.$destroy(detaching);
+
 
     			if (detaching) {
     				detach(t);
@@ -3443,14 +3510,16 @@ var app = (function () {
     	let $meetups;
 
     	validate_store(customMeetupsStore, 'meetups');
-    	subscribe($$self, customMeetupsStore, $$value => { $meetups = $$value; $$invalidate('$meetups', $meetups); });
+    	component_subscribe($$self, customMeetupsStore, $$value => { $meetups = $$value; $$invalidate('$meetups', $meetups); });
 
     	
 
       // let meetups = ;
 
       let editMode;
+
       let page = "overview";
+
       let pageData = {};
       let editedId;
 
@@ -3465,13 +3534,17 @@ var app = (function () {
       }
 
       function showDetails(event) {
+
         $$invalidate('page', page = "details");
+
         pageData.id = event.detail; $$invalidate('pageData', pageData);
       }
 
       function closeDetails() {
+
         $$invalidate('page', page = 'overview');
         $$invalidate('pageData', pageData = {});
+
       }
 
       function startEdit(event) {

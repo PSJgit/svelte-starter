@@ -2,6 +2,7 @@
   import MeetupItem from "./MeetupItem.svelte";
 
   export let meetups;
+  console.log(meetups)
 </script>
 
 <style>
