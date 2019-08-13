@@ -90,13 +90,6 @@ var app = (function () {
         node.addEventListener(event, handler, options);
         return () => node.removeEventListener(event, handler, options);
     }
-    function prevent_default(fn) {
-        return function (event) {
-            event.preventDefault();
-            // @ts-ignore
-            return fn.call(this, event);
-        };
-    }
     function attr(node, attribute, value) {
         if (value == null)
             node.removeAttribute(attribute);
@@ -912,7 +905,8 @@ var app = (function () {
 
     const file$3 = "src\\Meetups\\MeetupItem.svelte";
 
-    // (86:6) {#if isFav}
+    // (85:6) {#if isFav}
+
     function create_if_block$1(ctx) {
     	var current;
 
@@ -952,7 +946,8 @@ var app = (function () {
     	};
     }
 
-    // (87:8) <Badge>
+    // (86:8) <Badge>
+
     function create_default_slot_3(ctx) {
     	var t;
 
@@ -973,7 +968,9 @@ var app = (function () {
     	};
     }
 
-    // (100:4) <Button href="mailto:{email}">
+
+    // (99:4) <Button href="mailto:{email}">
+
     function create_default_slot_2(ctx) {
     	var t;
 
@@ -994,7 +991,8 @@ var app = (function () {
     	};
     }
 
-    // (101:4) <Button        mode="outline"        color={isFav ? null : 'success'}        type="button"        on:click={toggleFavorite}>
+    // (100:4) <Button       mode="outline"       color={isFav ? null : 'success'}       type="button"       on:click={toggleFavorite}>
+
     function create_default_slot_1(ctx) {
     	var t_value = ctx.isFav ? 'Unfavorite' : 'Favorite', t;
 
@@ -1021,7 +1019,9 @@ var app = (function () {
     	};
     }
 
-    // (108:4) <Button type="button" on:click={() => {dispatch('showdetails', id)}}>
+
+    // (107:4) <Button type="button" on:click={() => dispatch('showdetails', id)}>
+
     function create_default_slot(ctx) {
     	var t;
 
@@ -1106,28 +1106,29 @@ var app = (function () {
     			button1.$$.fragment.c();
     			t11 = space();
     			button2.$$.fragment.c();
-    			attr(h1, "class", "svelte-qjy3m3");
-    			add_location(h1, file$3, 83, 4, 1339);
-    			attr(h2, "class", "svelte-qjy3m3");
-    			add_location(h2, file$3, 89, 4, 1440);
-    			attr(p0, "class", "svelte-qjy3m3");
-    			add_location(p0, file$3, 90, 4, 1465);
-    			attr(header, "class", "svelte-qjy3m3");
-    			add_location(header, file$3, 82, 2, 1325);
-    			attr(img, "src", ctx.imageUrl);
-    			attr(img, "alt", ctx.title);
-    			attr(img, "class", "svelte-qjy3m3");
-    			add_location(img, file$3, 93, 4, 1523);
-    			attr(div0, "class", "image svelte-qjy3m3");
-    			add_location(div0, file$3, 92, 2, 1498);
-    			attr(p1, "class", "svelte-qjy3m3");
-    			add_location(p1, file$3, 96, 4, 1598);
-    			attr(div1, "class", "content svelte-qjy3m3");
-    			add_location(div1, file$3, 95, 2, 1571);
-    			attr(footer, "class", "svelte-qjy3m3");
-    			add_location(footer, file$3, 98, 2, 1632);
-    			attr(article, "class", "svelte-qjy3m3");
-    			add_location(article, file$3, 81, 0, 1312);
+    			h1.className = "svelte-enhpap";
+    			add_location(h1, file$3, 82, 4, 1255);
+    			h2.className = "svelte-enhpap";
+    			add_location(h2, file$3, 88, 4, 1350);
+    			p0.className = "svelte-enhpap";
+    			add_location(p0, file$3, 89, 4, 1374);
+    			header.className = "svelte-enhpap";
+    			add_location(header, file$3, 81, 2, 1242);
+    			img.src = ctx.imageUrl;
+    			img.alt = ctx.title;
+    			img.className = "svelte-enhpap";
+    			add_location(img, file$3, 92, 4, 1429);
+    			div0.className = "image svelte-enhpap";
+    			add_location(div0, file$3, 91, 2, 1405);
+    			p1.className = "svelte-enhpap";
+    			add_location(p1, file$3, 95, 4, 1501);
+    			div1.className = "content svelte-enhpap";
+    			add_location(div1, file$3, 94, 2, 1475);
+    			footer.className = "svelte-enhpap";
+    			add_location(footer, file$3, 97, 2, 1533);
+    			article.className = "svelte-enhpap";
+    			add_location(article, file$3, 80, 0, 1230);
+
     		},
 
     		l: function claim(nodes) {
@@ -1274,7 +1275,11 @@ var app = (function () {
     		if (!writable_props.includes(key) && !key.startsWith('$$')) console.warn(`<MeetupItem> was created with unknown prop '${key}'`);
     	});
 
-    	function click_handler() {dispatch('showdetails', id);}
+
+    	function click_handler() {
+    		return dispatch('showdetails', id);
+    	}
+
 
     	$$self.$set = $$props => {
     		if ('id' in $$props) $$invalidate('id', id = $$props.id);
@@ -2203,7 +2208,7 @@ var app = (function () {
 
     const file$7 = "src\\Meetups\\EditMeetup.svelte";
 
-    // (106:4) <Button type="button" mode="outline" on:click={cancel}>
+    // (105:4) <Button type="button" mode="outline" on:click={cancel}>
     function create_default_slot_2$1(ctx) {
     	var t;
 
@@ -2224,7 +2229,7 @@ var app = (function () {
     	};
     }
 
-    // (107:4) <Button type="button" on:click={submitForm} disabled={!formIsValid}>
+    // (106:4) <Button type="button" on:click={submitForm} disabled={!formIsValid}>
     function create_default_slot_1$1(ctx) {
     	var t;
 
@@ -2245,7 +2250,7 @@ var app = (function () {
     	};
     }
 
-    // (105:2) <div slot="footer">
+    // (104:2) <div slot="footer">
     function create_footer_slot(ctx) {
     	var div, t, current;
 
@@ -2278,7 +2283,9 @@ var app = (function () {
     			t = space();
     			button1.$$.fragment.c();
     			attr(div, "slot", "footer");
-    			add_location(div, file$7, 104, 2, 2783);
+
+    			add_location(div, file$7, 103, 2, 2708);
+
     		},
 
     		m: function mount(target, anchor) {
@@ -2327,7 +2334,7 @@ var app = (function () {
     	};
     }
 
-    // (59:0) <Modal title="Edit Meetup Data" on:cancel>
+    // (58:0) <Modal title="Edit Meetup Data" on:cancel>
     function create_default_slot$2(ctx) {
     	var form, t0, t1, t2, t3, t4, updating_value, t5, current, dispose;
 
@@ -2427,9 +2434,11 @@ var app = (function () {
     			t4 = space();
     			textinput5.$$.fragment.c();
     			t5 = space();
-    			attr(form, "class", "svelte-shrb4m");
-    			add_location(form, file$7, 59, 2, 1352);
-    			dispose = listen(form, "submit", prevent_default(ctx.submitForm));
+
+    			form.className = "svelte-no1xoc";
+    			add_location(form, file$7, 58, 2, 1337);
+    			dispose = listen(form, "submit", ctx.submitForm);
+
     		},
 
     		m: function mount(target, anchor) {
@@ -2603,7 +2612,6 @@ var app = (function () {
       const dispatch = createEventDispatcher();
 
       function submitForm() {
-
         const meetupData = {
           title: title,
           subtitle: subtitle,
@@ -2613,8 +2621,8 @@ var app = (function () {
           address: address
         };
 
+        // meetups.push(newMeetup); // DOES NOT WORK!
         customMeetupsStore.addMeetup(meetupData);
-        
         dispatch("save");
       }
 
@@ -2712,11 +2720,12 @@ var app = (function () {
     	}
     }
 
-    /* src\Meetups\MeetupDetail.svelte generated by Svelte v3.6.11 */
+
+    /* src\Meetups\MeetupDetail.svelte generated by Svelte v3.5.1 */
 
     const file$8 = "src\\Meetups\\MeetupDetail.svelte";
 
-    // (29:4) <Button href="mailto:{selectedMeetup.contactEmail}">
+    // (71:4) <Button href="mailto:{selectedMeetup.contactEmail}">
     function create_default_slot_1$2(ctx) {
     	var t;
 
@@ -2737,7 +2746,8 @@ var app = (function () {
     	};
     }
 
-    // (30:4) <Button type="button" mode="outline" on:click={() => dispatch('close')}>
+    // (72:4) <Button type="button" mode="outline" on:click={() => dispatch('close')}>
+
     function create_default_slot$3(ctx) {
     	var t;
 
@@ -2802,22 +2812,24 @@ var app = (function () {
     			button0.$$.fragment.c();
     			t9 = space();
     			button1.$$.fragment.c();
-    			attr(img, "src", img_src_value = ctx.selectedMeetup.imageUrl);
-    			attr(img, "alt", img_alt_value = ctx.selectedMeetup.title);
-    			attr(img, "class", "svelte-12bmo6w");
-    			add_location(img, file$8, 22, 4, 495);
-    			attr(div0, "class", "image svelte-12bmo6w");
-    			add_location(div0, file$8, 21, 2, 470);
-    			attr(h1, "class", "svelte-12bmo6w");
-    			add_location(h1, file$8, 25, 4, 600);
-    			attr(h2, "class", "svelte-12bmo6w");
-    			add_location(h2, file$8, 26, 4, 637);
-    			attr(p, "class", "svelte-12bmo6w");
-    			add_location(p, file$8, 27, 4, 704);
-    			attr(div1, "class", "content svelte-12bmo6w");
-    			add_location(div1, file$8, 24, 2, 573);
-    			attr(section, "class", "svelte-12bmo6w");
-    			add_location(section, file$8, 20, 0, 457);
+
+    			img.src = img_src_value = ctx.selectedMeetup.imageUrl;
+    			img.alt = img_alt_value = ctx.selectedMeetup.title;
+    			img.className = "svelte-10utsu1";
+    			add_location(img, file$8, 64, 4, 931);
+    			div0.className = "image svelte-10utsu1";
+    			add_location(div0, file$8, 63, 2, 907);
+    			h1.className = "svelte-10utsu1";
+    			add_location(h1, file$8, 67, 4, 1033);
+    			h2.className = "svelte-10utsu1";
+    			add_location(h2, file$8, 68, 4, 1069);
+    			p.className = "svelte-10utsu1";
+    			add_location(p, file$8, 69, 4, 1135);
+    			div1.className = "content svelte-10utsu1";
+    			add_location(div1, file$8, 66, 2, 1007);
+    			section.className = "svelte-10utsu1";
+    			add_location(section, file$8, 62, 0, 895);
+
     		},
 
     		l: function claim(nodes) {
@@ -2849,11 +2861,12 @@ var app = (function () {
 
     		p: function update(changed, ctx) {
     			if ((!current || changed.selectedMeetup) && img_src_value !== (img_src_value = ctx.selectedMeetup.imageUrl)) {
-    				attr(img, "src", img_src_value);
+    				img.src = img_src_value;
     			}
 
     			if ((!current || changed.selectedMeetup) && img_alt_value !== (img_alt_value = ctx.selectedMeetup.title)) {
-    				attr(img, "alt", img_alt_value);
+    				img.alt = img_alt_value;
+
     			}
 
     			if ((!current || changed.selectedMeetup) && t1_value !== (t1_value = ctx.selectedMeetup.title)) {
@@ -2884,16 +2897,18 @@ var app = (function () {
 
     		i: function intro(local) {
     			if (current) return;
-    			transition_in(button0.$$.fragment, local);
+    			button0.$$.fragment.i(local);
 
-    			transition_in(button1.$$.fragment, local);
+    			button1.$$.fragment.i(local);
+
 
     			current = true;
     		},
 
     		o: function outro(local) {
-    			transition_out(button0.$$.fragment, local);
-    			transition_out(button1.$$.fragment, local);
+    			button0.$$.fragment.o(local);
+    			button1.$$.fragment.o(local);
+
     			current = false;
     		},
 
@@ -2902,9 +2917,11 @@ var app = (function () {
     				detach(section);
     			}
 
-    			destroy_component(button0);
 
-    			destroy_component(button1);
+    			button0.$destroy();
+
+    			button1.$destroy();
+
     		}
     	};
     }
@@ -2912,19 +2929,21 @@ var app = (function () {
     function instance$7($$self, $$props, $$invalidate) {
     	
 
-        let { id } = $$props;
 
-        let selectedMeetup;
+      let { id } = $$props;
 
-        const unsubscribe = customMeetupsStore.subscribe(items => {
-            $$invalidate('selectedMeetup', selectedMeetup = items.find(i => i.id === id));
-        });
+      let selectedMeetup;
 
-        const dispatch = createEventDispatcher();
+      const unsubscribe = customMeetupsStore.subscribe(items => {
+        $$invalidate('selectedMeetup', selectedMeetup = items.find(i => i.id === id));
+      });
 
-        onDestroy(() => {
-            unsubscribe();
-        });
+      const dispatch = createEventDispatcher();
+
+      onDestroy(() => {
+        unsubscribe();
+      });
+
 
     	const writable_props = ['id'];
     	Object.keys($$props).forEach(key => {
@@ -2968,11 +2987,12 @@ var app = (function () {
     	}
     }
 
-    /* src\App.svelte generated by Svelte v3.6.11 */
+    /* src\App.svelte generated by Svelte v3.5.1 */
 
     const file$9 = "src\\App.svelte";
 
-    // (56:4) {:else}
+    // (56:2) {:else}
+
     function create_else_block$2(ctx) {
     	var current;
 
@@ -3000,18 +3020,23 @@ var app = (function () {
 
     		i: function intro(local) {
     			if (current) return;
-    			transition_in(meetupdetail.$$.fragment, local);
+    			meetupdetail.$$.fragment.i(local);
+
 
     			current = true;
     		},
 
     		o: function outro(local) {
-    			transition_out(meetupdetail.$$.fragment, local);
+
+    			meetupdetail.$$.fragment.o(local);
+
     			current = false;
     		},
 
     		d: function destroy(detaching) {
-    			destroy_component(meetupdetail, detaching);
+
+    			meetupdetail.$destroy(detaching);
+
     		}
     	};
     }
@@ -3045,8 +3070,10 @@ var app = (function () {
     			if (if_block) if_block.c();
     			t1 = space();
     			meetupgrid.$$.fragment.c();
-    			attr(div, "class", "meetup-controls svelte-lvjiuf");
-    			add_location(div, file$9, 48, 4, 933);
+
+    			div.className = "meetup-controls svelte-1w77hyv";
+    			add_location(div, file$9, 48, 4, 886);
+
     		},
 
     		m: function mount(target, anchor) {
@@ -3065,13 +3092,16 @@ var app = (function () {
     			button.$set(button_changes);
 
     			if (ctx.editMode === 'add') {
-    				if (!if_block) {
+
+    				if (if_block) {
+    					if_block.p(changed, ctx);
+    					if_block.i(1);
+    				} else {
     					if_block = create_if_block_1$1(ctx);
     					if_block.c();
-    					transition_in(if_block, 1);
+    					if_block.i(1);
     					if_block.m(t1.parentNode, t1);
-    				} else {
-    									transition_in(if_block, 1);
+
     				}
     			} else if (if_block) {
     				group_outros();
@@ -3088,7 +3118,9 @@ var app = (function () {
 
     		i: function intro(local) {
     			if (current) return;
-    			transition_in(button.$$.fragment, local);
+
+    			button.$$.fragment.i(local);
+
 
     			transition_in(if_block);
 
@@ -3098,9 +3130,11 @@ var app = (function () {
     		},
 
     		o: function outro(local) {
-    			transition_out(button.$$.fragment, local);
-    			transition_out(if_block);
-    			transition_out(meetupgrid.$$.fragment, local);
+
+    			button.$$.fragment.o(local);
+    			if (if_block) if_block.o();
+    			meetupgrid.$$.fragment.o(local);
+
     			current = false;
     		},
 
@@ -3109,7 +3143,8 @@ var app = (function () {
     				detach(div);
     			}
 
-    			destroy_component(button);
+    			button.$destroy();
+
 
     			if (detaching) {
     				detach(t0);
@@ -3121,7 +3156,9 @@ var app = (function () {
     				detach(t1);
     			}
 
-    			destroy_component(meetupgrid, detaching);
+
+    			meetupgrid.$destroy(detaching);
+
     		}
     	};
     }
@@ -3165,20 +3202,27 @@ var app = (function () {
     			current = true;
     		},
 
+    		p: noop,
+
     		i: function intro(local) {
     			if (current) return;
-    			transition_in(editmeetup.$$.fragment, local);
+    			editmeetup.$$.fragment.i(local);
+
 
     			current = true;
     		},
 
     		o: function outro(local) {
-    			transition_out(editmeetup.$$.fragment, local);
+
+    			editmeetup.$$.fragment.o(local);
+
     			current = false;
     		},
 
     		d: function destroy(detaching) {
-    			destroy_component(editmeetup, detaching);
+
+    			editmeetup.$destroy(detaching);
+
     		}
     	};
     }
@@ -3209,8 +3253,9 @@ var app = (function () {
     			t = space();
     			main = element("main");
     			if_block.c();
-    			attr(main, "class", "svelte-lvjiuf");
-    			add_location(main, file$9, 46, 0, 892);
+    			main.className = "svelte-1w77hyv";
+    			add_location(main, file$9, 46, 0, 847);
+
     		},
 
     		l: function claim(nodes) {
@@ -3232,9 +3277,13 @@ var app = (function () {
     				if_blocks[current_block_type_index].p(changed, ctx);
     			} else {
     				group_outros();
-    				transition_out(if_blocks[previous_block_index], 1, 1, () => {
+
+    				on_outro(() => {
+    					if_blocks[previous_block_index].d(1);
     					if_blocks[previous_block_index] = null;
     				});
+    				if_block.o(1);
+
     				check_outros();
 
     				if_block = if_blocks[current_block_type_index];
@@ -3242,27 +3291,35 @@ var app = (function () {
     					if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
     					if_block.c();
     				}
-    				transition_in(if_block, 1);
+
+    				if_block.i(1);
+
     				if_block.m(main, null);
     			}
     		},
 
     		i: function intro(local) {
     			if (current) return;
-    			transition_in(header.$$.fragment, local);
 
-    			transition_in(if_block);
+    			header.$$.fragment.i(local);
+
+    			if (if_block) if_block.i();
+
     			current = true;
     		},
 
     		o: function outro(local) {
-    			transition_out(header.$$.fragment, local);
-    			transition_out(if_block);
+
+    			header.$$.fragment.o(local);
+    			if (if_block) if_block.o();
+
     			current = false;
     		},
 
     		d: function destroy(detaching) {
-    			destroy_component(header, detaching);
+
+    			header.$destroy(detaching);
+
 
     			if (detaching) {
     				detach(t);
@@ -3285,7 +3342,9 @@ var app = (function () {
       // let meetups = ;
 
       let editMode;
-      let page = 'overview';
+
+      let page = "overview";
+
       let pageData = {};
 
       function addMeetup(event) {
@@ -3297,13 +3356,17 @@ var app = (function () {
       }
 
       function showDetails(event) {
-        $$invalidate('page', page = 'details');
+
+        $$invalidate('page', page = "details");
+
         pageData.id = event.detail; $$invalidate('pageData', pageData);
       }
 
       function closeDetails() {
-        $$invalidate('pageData', pageData = {});
+
         $$invalidate('page', page = 'overview');
+        $$invalidate('pageData', pageData = {});
+
       }
 
     	function click_handler() {
